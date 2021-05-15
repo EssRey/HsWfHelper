@@ -1,6 +1,11 @@
 # HsWfHelper
 
-## How to run
+## Useful files
+* "technical_limitations.md": see this file for a breakdown of what can be migrated with the current version of the public Workflows API
+* "actions_catalog.docx": a list of all workflow actions with sample JSON representations and some annotation
+* "2_process_and_copy.py" a simple proof-of-concept migration script, with a lot of stub/dummy/simplification in it
+
+## How to run scripts in this repository
 
 Requires an ".env" file in the same directory as the ".py" file with two lines containing api keys (one for the portal of origin, and one for the destination portal):
 
