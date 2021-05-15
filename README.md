@@ -14,4 +14,4 @@
 
 * THE DESTIONATION PORTAL MUST BE A TEST PORTAL (as this script currently produces a lot of placeholders and is not ready for serious use)
 
-* Tested using Python 3.8.6 (not there are no actual tests yet)
+* Tested using Python 3.8.6 (note there are no actual tests yet)
