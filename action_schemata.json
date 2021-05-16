@@ -1,0 +1,229 @@
+{
+    "SET_CONTACT_PROPERTY": {
+        "newValue": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "propertyName": "PASS",
+        "actionId": "DROP"
+    },
+    "DELAY": {
+        "delayMillis": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP",
+        "anchorSetting": "PASS"
+    },
+    "UNSUPPORTED_ACTION": {
+        "actionId": "DROP",
+        "type": "PASS",
+        "stepId": "DROP",
+        "contextJson": "PASS"
+    },
+    "WORKFLOW_ENROLLMENT": {
+        "stepId": "DROP",
+        "actionId": "DROP",
+        "type": "PASS",
+        "workflowId": "SUBSTITUTE"
+    },
+    "WEBHOOK": {
+        "method": "PASS",
+        "url": "PASS",
+        "appId": "NOT_IMPLEMENTED"
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP"
+    },
+    "NOTIFICATION": {
+        "emailContentId": "SUBSTITUTE",
+        "staticRecipient": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "recipientProperty": "PASS",
+        "actionId": "DROP"
+    },
+    "SMS_NOTIFICATION": {
+        "staticTo": "PASS",
+        "userId": "SUBSTITUTE",
+        "type": "PASS",
+        "stepId": "DROP",
+        "body": "PASS",
+        "actionId": "DROP"
+    },
+    "NOTIFICATION_STATION": {
+        "subject": "PASS",
+        "recipientUserIds": "SUBSTITUTE",
+        "delivery": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "recipientTeamIds": "SUBSTITUTE",
+        "body": "PASS",
+        "actionId": "DROP"
+    },
+    "EMAIL": {
+        "emailContentId": "SUBSTITUTE",
+        "emailCampaignGroupId": "DROP",
+        "emailCampaignId": "DROP",
+        "goalListCount": "DROP",
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP"
+    },
+    "LEAD_ASSIGNMENT": {
+        "owners": "SUBSTITUTE",
+        "overwriteCurrentOwner": "PASS",
+        "teamId": "SUBSTITUTE",
+        "ownerProperty": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP"
+    },
+    "DEAL": {
+        "assignCurrent": "PASS",
+        "ownerId": "SUBSTITUTE",
+        "stage": "NOT_IMPLEMENTED",
+        "amount": "PASS",
+        "daysTillClose": "PASS",
+        "type": "PASS",
+        "pipeline": "NOT_IMPLEMENTED",
+        "properties": "NOT_IMPLEMENTED",
+        "stepId": "DROP",
+        "actionId": "DROP",
+        "dealName": "PASS"
+    },
+    "TICKET": {
+        "properties": "NOT_IMPLEMENTED",
+        "actionId": "DROP",
+        "type": "PASS",
+        "stepId": "DROP"
+    },
+    "TASK": {
+        "subject": "PASS",
+        "dueDays": "PASS",
+        "reminderMinutes": "PASS",
+        "assignCurrent": "PASS",
+        "taskType": "PASS",
+        "ownerId": "SUBSTITUTE",
+        "ownerProperty": "PASS",
+        "type": "PASS",
+        "description": "PASS",
+        "dueImmediately": "PASS",
+        "dueMinutes": "PASS",
+        "reminderDays": "PASS",
+        "actionId": "DROP",
+        "stepId": "DROP",
+        "noReminderDate": "PASS"
+    },
+    "UPDATE_LIST": {
+        "directive": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "listId": "SUBSTITUTE",
+        "actionId": "DROP"
+    },
+    "SET_COMPANY_PROPERTY": {
+        "newValue": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "propertyName": "PASS",
+        "actionId": "DROP"
+    },
+    "DATE_STAMP_PROPERTY": {
+        "model": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "propertyName": "PASS",
+        "actionId": "DROP"
+    },
+    "COPY_PROPERTY": {
+        "sourceProperty": "PASS",
+        "targetProperty": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "targetModel": "PASS",
+        "actionId": "DROP"
+    },
+    "COPY_COMPANY_PROPERTY": {
+        "sourceProperty": "PASS",
+        "targetProperty": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "targetModel": "PASS",
+        "actionId": "DROP"
+    },
+    "ADD_SUBTRACT_PROPERTY": {
+        "valueToModifyPropertyBy": "PASS",
+        "type": "PASS",
+        "propertyName": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP"
+    },
+    "INCREMENT_COMPANY_PROPERTY": {
+        "valueToModifyPropertyBy": "PASS",
+        "type": "PASS",
+        "propertyName": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP"
+    },
+    "UPDATE_EMAIL_SUBSCRIPTION": {
+        "subscriptionId": "SUBSTITUTE",
+        "legalBasisExplanation": "PASS",
+        "optState": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP",
+        "legalBasis": "PASS"
+    },
+    "EXTENSION": {
+        "extensionDefinitionId": "NOT_IMPLEMENTED",
+        "extensionId": "NOT_IMPLEMENTED",
+        "extensionInstanceVersion": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "extensionDefinitionVersion": "PASS",
+        "actionId": "DROP",
+        "metadata": "NOT_IMPLEMENTED"
+    },
+    "SET_SALESFORCE_CAMPAIGN_MEMBERSHIP": {
+        "status": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "actionId": "DROP",
+        "campaignId": "PASS"
+    },
+    "ADD_CONTACT_ENUM_PROPERTY": {
+        "isReplacement": "PASS",
+        "newValue": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "propertyName": "PASS",
+        "actionId": "DROP"
+    },
+    "ADD_COMPANY_ENUM_PROPERTY": {
+        "isReplacement": "PASS",
+        "newValue": "PASS",
+        "type": "PASS",
+        "stepId": "DROP",
+        "propertyName": "PASS",
+        "actionId": "DROP"
+    },
+    "BRANCH": {
+        "type": "PASS",
+        "filtersListId": "DROP",
+        "actionId": "DROP",
+        "stepId": "DROP",
+        "filters": "SUBSTITUTE",
+        "acceptActions": "PASS",
+        "rejectActions": "PASS"
+    },
+    "CREATE_SFDC_TASK": {
+        "type": "PASS",
+        "status": "PASS",
+        "subject": "PASS",
+        "email": "PASS",
+        "comments": "PASS",
+        "daysFrom": "PASS",
+        "priority": "PASS",
+        "actionId": "DROP",
+        "stepId": "DROP"
+    }
+}
