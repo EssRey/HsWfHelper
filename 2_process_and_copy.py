@@ -29,12 +29,12 @@ def url_create_wf(hapikey):
 #-------------
 # Placeholder creator function
 #-------------
-def create_placeholder_node(message):
-    dummy = {"type": "SET_CONTACT_PROPERTY",
+def create_placeholder(placeholder_content):
+    placeholder_node = {"type": "SET_CONTACT_PROPERTY",
              "propertyName": "message",
-             "newValue": message
+             "newValue": json.dumps(placeholder_content)
              }
-    return dummy
+    return placeholder_node
 
 #-------------
 # Action processor function
@@ -48,14 +48,14 @@ def apply_schema(node):
         node_copy = {}
         for attribute in node:
             if schema[attribute]=="NOT_IMPLEMENTED":
-                return [create_placeholder_node(json.dumps(node))]
+                return [create_placeholder(node)]
             elif schema[attribute]=="PASS":
                 node_copy[attribute] = node[attribute]
             elif schema[attribute]=="SUBSTITUTE":
                 node_copy[attribute] = get_target_id(attribute, node[attribute])
         return [node_copy]
     else: 
-        return [create_placeholder_node(json.dumps(node))]
+        return [create_placeholder(node)]
 
 #-------------
 # Graph traversal function 

@@ -51,6 +51,8 @@ NOTE: Right now the script will not in fact apply any ID mappings, and it will p
 ## Current limitations
 
 In addition to the limitations laid out in "technical_limitations.md", right now the script has the following limitations:
+* some "set property" actions and related actions are currently attributed to the wrong object type. See issue tracker, should be resolved in next version.
+* "delay until time of day / day of week" actions are wrongly migrated as zero-delay "delay for set amount of time" actions (instead of as placeholders). See issue tracker. Should be trivially resolved in next version.
 * no ID mappings are applied
 * the following additional action types are migrated as placeholders:
   * webhook actions with request signatures
