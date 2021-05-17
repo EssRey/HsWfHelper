@@ -6,7 +6,7 @@
 
 * "technical_limitations.md": a breakdown of what can be migrated with the current version of the public Workflows API
 * "2_process_and_copy.py": the actual proof-of-concept migration script, with a lot of stub/dummy/simplification in it
-* "action_schemata.json" contain processing schemata for all workflow action types (current exception: ads audience actions)
+* "action_schemata.json" contain processing schemata for all workflow action types
 
 ## Configuration
 

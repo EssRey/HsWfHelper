@@ -13,7 +13,6 @@ Note that the following points are purely based on inspection of public and docu
 * any of the newfangled "information passing between actions" logic (introduced in April 2021, and available in few actions at present) will likely be lost (not yet tested in detail)
 * Enrollment triggers AND filters in if/then branching conditions haven't been evaluated yet. There will probably be some limits to what segmentation criteria can be fully migrated.
 * suppression lists, automatic workflow unenrolllment settings, goal conditions, and other workflow-level settings have not been tested yet
-* ad audience actions untested
 * conversation object property actions untested (likely identical to quote object, i.e. only migrated as placeholder)
 
 ## Breakdown of workflow actions
@@ -49,6 +48,8 @@ The following list describes that can be migrated via API, based on inspection o
 * "Format data"
 * "Send internal email notification"
 * "Set marketing contact status"
+* "Add to ads audience"
+* "Remove from ads audience"
 
 ### Special cases
 * "If/then branch"
