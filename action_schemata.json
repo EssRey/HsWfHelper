@@ -28,7 +28,7 @@
     "WEBHOOK": {
         "method": "PASS",
         "url": "PASS",
-        "appId": "NOT_IMPLEMENTED"
+        "appId": "NOT_IMPLEMENTED",
         "type": "PASS",
         "stepId": "DROP",
         "actionId": "DROP"
@@ -71,7 +71,7 @@
     "LEAD_ASSIGNMENT": {
         "owners": "SUBSTITUTE",
         "overwriteCurrentOwner": "PASS",
-        "teamId": "SUBSTITUTE",
+        "teamId": "NOT_IMPLEMENTED",
         "ownerProperty": "PASS",
         "type": "PASS",
         "stepId": "DROP",

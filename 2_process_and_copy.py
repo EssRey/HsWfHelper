@@ -1,9 +1,9 @@
 #-------------
 # Imports
 #-------------
-import requests
+import requests, json
 from dotenv import dotenv_values
-
+from id_mapper import get_target_id
 
 #-------------
 # Configuration
@@ -12,29 +12,9 @@ from dotenv import dotenv_values
 config = dotenv_values(".env")
 hapikey_origin = config["HAPIKEY_ORIGIN"]
 hapikey_target = config["HAPIKEY_TARGET"]
-
-# this is a dictionary of all action schemata; the exact structure will probably change
-schemata = {"DELAY": [
-    "type",
-    "delayMillis",
-    "stepId",
-    "anchorSetting",
-    "actionId"
-],
-    "SET_CONTACT_PROPERTY": [
-        "newValue",
-        "type",
-        "propertyName"
-],
-    "BRANCH": [
-        "type",
-        "filters",
-        "rejectActions",
-        "acceptActions"
-]}
-
-# dictionary-of-dictionaries. Each top-level key corresponds to an action attribute, and each value is a map of IDs
-mappings = {"ownerId": {"123": "456", "124": "789"}, "listId": {"1": "123"}}
+with open("action_schemata.json", "r") as read_file:
+    action_schemata = json.load(read_file)
+# note that the ID mappings (currently as stub) is managed in the id_mapper.py module; TO DO streamline config
 
 #-------------
 # URL getters
@@ -47,68 +27,35 @@ def url_create_wf(hapikey):
     return "https://api.hubapi.com/automation/v3/workflows?hapikey=" + hapikey
 
 #-------------
-# dummy getters
+# Placeholder creator function
 #-------------
-def get_dummy_node(message):
+def create_placeholder_node(message):
     dummy = {"type": "SET_CONTACT_PROPERTY",
              "propertyName": "message",
              "newValue": message
              }
     return dummy
 
-def get_dummy_branch(node):
-    node["filters"] = [
-        [
-            {
-                "operator": "EQ",
-                "withinTimeMode": "PAST",
-                "filterFamily": "PropertyValue",
-                "type": "string",
-                "property": "message",
-                "value": "PLACEHOLDER_CONDITION"
-            }
-        ]
-    ]
-    return node
-
 #-------------
-# Action processor functions
-# (mostly stubs or partial dummies)
-# (note some inconsistency: return action or list of actions)
+# Action processor function
 #-------------
 
-def validate_node(node):
-    # not implemented yet
-    return [node]
+# TO DO auto-creation of "flag" (annotation) nodes
 
-def substitute_ids(node):
-    # minimal implementation (skips non-existing keys, surfaces no errors)
-    for key in node:
-        try:
-            node[key]=mappings[key][node[key]]
-        except KeyError:
-            pass
-        except:
-            print(node)
-    return [node]
-
-def cull_node(node):
-    # proof-of-concept for two node types
-    if node["type"]=="BRANCH":
-        return [{ key: node[key] for key in schemata["BRANCH"] }]
-    elif node["type"]=="SET_CONTACT_PROPERTY":
-        return [{ key: node[key] for key in schemata["SET_CONTACT_PROPERTY"] }]
-    else:
-        return [dummy_processor(node)]
-
-# this is a composite node processing function -- I will probably refactor to avoid this sort of thing
-def dummy_processor(node):
-    node = validate_node(node)[0]
-    node = substitute_ids(node)[0]
-    if node["type"]=="BRANCH":
-        return [get_dummy_node("CHECK MISSING BRANCHES"), get_dummy_branch(node)]
-    else:
-        return [get_dummy_node("[placeholder for " + str(node["type"]) + " action]")]
+def apply_schema(node):
+    if node["type"] in action_schemata:
+        schema = action_schemata[node["type"]]
+        node_copy = {}
+        for attribute in node:
+            if schema[attribute]=="NOT_IMPLEMENTED":
+                return [create_placeholder_node(json.dumps(node))]
+            elif schema[attribute]=="PASS":
+                node_copy[attribute] = node[attribute]
+            elif schema[attribute]=="SUBSTITUTE":
+                node_copy[attribute] = get_target_id(attribute, node[attribute])
+        return [node_copy]
+    else: 
+        return [create_placeholder_node(json.dumps(node))]
 
 #-------------
 # Graph traversal function 
@@ -138,17 +85,16 @@ def process_actions(actions, node_processor):
 all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
 for workflow in all_workflows:
     type = workflow["type"]
+    name = workflow["name"]
     id = workflow["id"]
     newId = workflow["migrationStatus"]["flowId"]
-    name = workflow["name"]
     actions = requests.get(url_wf(id, hapikey_origin)).json()["actions"]
     # apply processing steps to the actions graph
-    actions = process_actions(actions, dummy_processor)
-    actions = process_actions(actions, cull_node)
+    actions = process_actions(actions, apply_schema)
     # write workflow to target portal
     url_create_wf(hapikey_target)
     body = {
-        "name": "[DUMMY-MIGRATED]_" + name,
+        "name": "[MIGRATED_v2]_" + name,
         "type": type,
         "onlyEnrollsManually": True,
         "actions": actions
@@ -157,3 +103,6 @@ for workflow in all_workflows:
     if not r:
         print(r.text)
         print ("Workflow " + str(newId) + " was not copied.")
+    # log the http response
+    with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
+        json.dump(r.json(), data_file, indent=2)
