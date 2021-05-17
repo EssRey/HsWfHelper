@@ -6,7 +6,7 @@ Note that the following points are purely based on inspection of public and docu
 * no non-contact workflows can be migrated
 
 ## Things that haven't been tested or clarified yet
-* workflow extension actions untested
+* workflow extension actions mostly untested
 * all custom object dependencies are untested
 * all dependencies on custom timeline events are untested
 * there may be other custom dependencies that have not been tested (e.g. custom task types) that may result in additional nodes being migrated as placeholders only
@@ -29,6 +29,7 @@ The following list describes that can be migrated via API, based on inspection o
 * "Manage subscription status"
 * "Remove from static list"
 * "Rotate record to owner"
+  * if multiple teams are selected for rotation, only one of them will be migrated, the others have to be added manually)
 * "Send email"
 * "Send in-app notification"
   * owner property-based recipients may have to be re-added manually
@@ -37,6 +38,8 @@ The following list describes that can be migrated via API, based on inspection o
 * "Send internal SMS"
 * "Trigger webhook"
   * in some cases, the request signature will have to be set manually
+* "Set Salesforce campaign"
+* "Create a Salesforce task"
 
 ### Action that can only be migrated as a placeholder (need to be manually re-created)
 
