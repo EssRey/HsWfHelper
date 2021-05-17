@@ -55,6 +55,7 @@ In addition to the limitations laid out in "technical_limitations.md", right now
 * the following additional action types are migrated as placeholders:
   * webhook actions with request signatures
   * "rotate owner"
-  * "create ticket" and "create deal"
+  * "create ticket" and "create deal" actions
   * workflow extension actions
-  * 
+* workflow enrollment triggers are not yet migrated (no automatic triggers in the migrated workflows, need to be added manually)
+* every if-then filter condition is replaced with the dummy filter condition "create date is known", and would have to be corrected manually
