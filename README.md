@@ -60,3 +60,4 @@ In addition to the limitations laid out in "technical_limitations.md", right now
   * workflow extension actions
 * workflow enrollment triggers are not yet migrated (no automatic triggers in the migrated workflows, need to be added manually)
 * every if-then filter condition is replaced with the dummy filter condition "create date is known", and would have to be corrected manually
+* workflows, cross-workflow unenrollments, suppression lists, execution times and other workflow-level settings aren't migrated yet (most of it will eventually be migratable though)
