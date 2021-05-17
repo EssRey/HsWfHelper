@@ -5,9 +5,8 @@
 ## Useful files in this repo
 
 * "technical_limitations.md": a breakdown of what can be migrated with the current version of the public Workflows API
-* "actions_catalog.docx": a list of all workflow actions with sample JSON representations and some annotation
 * "2_process_and_copy.py": the actual proof-of-concept migration script, with a lot of stub/dummy/simplification in it
-* "action_schemata.json" contain processing schemata for all workflow action types
+* "action_schemata.json" contain processing schemata for all workflow action types (current exception: ads audience actions)
 
 ## Configuration
 
