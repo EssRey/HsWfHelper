@@ -64,8 +64,8 @@ def apply_schema(node):
 #-------------
 
 def process_actions(actions, node_processor):
-# takes and returns a list of nodes
-# node_processor must take an action (dict) and return a list of actions (list of dicts)
+# takes and returns a list of actions
+# node_processor must take an action (dict) and return a list of actions
     action_list = []
     for action in actions:
         if action["type"]=="BRANCH":
@@ -78,8 +78,7 @@ def process_actions(actions, node_processor):
     return action_list
 
 #-------------
-# EXECUTION
-# read all workflows, loop over them, process each and write it to target portal
+# Workflow copy functions
 #-------------
 
 def copy_workflow(workflow_id, hapikey_origin, hapikey_target, silent=False):
