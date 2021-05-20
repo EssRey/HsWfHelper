@@ -2,16 +2,16 @@
 # Imports
 #-------------
 import requests, json
-from dotenv import dotenv_values
+#from dotenv import dotenv_values
 from id_mapper import get_target_id
 
 #-------------
 # Configuration
 #-------------
 
-config = dotenv_values(".env")
-hapikey_origin = config["HAPIKEY_ORIGIN"]
-hapikey_target = config["HAPIKEY_TARGET"]
+#config = dotenv_values(".env")
+hapikey_origin = "origin_hapikey"
+hapikey_target = "target_hapikey"
 with open("action_schemata.json", "r") as read_file:
     action_schemata = json.load(read_file)
 # note that the ID mappings (currently as stub) is managed in the id_mapper.py module; TO DO streamline config
@@ -53,6 +53,8 @@ def apply_schema(node):
                 node_copy[attribute] = node[attribute]
             elif schema[attribute]=="SUBSTITUTE":
                 node_copy[attribute] = get_target_id(attribute, node[attribute])
+        if node["type"] == "SET_COMPANY_PROPERTY":
+            return [create_placeholder("TODO: check the following action for proper object type"), node_copy]
         return [node_copy]
     else: 
         return [create_placeholder(node)]
