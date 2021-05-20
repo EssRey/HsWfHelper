@@ -14,10 +14,10 @@
         "anchorSetting": "PASS"
     },
     "UNSUPPORTED_ACTION": {
-        "actionId": "DROP",
-        "type": "PASS",
-        "stepId": "DROP",
-        "contextJson": "PASS"
+        "actionId": "NOT_IMPLEMENTED",
+        "type": "NOT_IMPLEMENTED",
+        "stepId": "NOT_IMPLEMENTED",
+        "contextJson": "NOT_IMPLEMENTED"
     },
     "WORKFLOW_ENROLLMENT": {
         "stepId": "DROP",

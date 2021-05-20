@@ -82,27 +82,37 @@ def process_actions(actions, node_processor):
 # read all workflows, loop over them, process each and write it to target portal
 #-------------
 
-all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
-for workflow in all_workflows:
-    type = workflow["type"]
+def copy_workflow(workflow_id, hapikey_origin, hapikey_target, silent=False):
+    workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+    wf_type = workflow["type"]
     name = workflow["name"]
-    id = workflow["id"]
     newId = workflow["migrationStatus"]["flowId"]
-    actions = requests.get(url_wf(id, hapikey_origin)).json()["actions"]
-    # apply processing steps to the actions graph
-    actions = process_actions(actions, apply_schema)
-    # write workflow to target portal
-    url_create_wf(hapikey_target)
+    actions = process_actions(workflow["actions"], apply_schema)
     body = {
-        "name": "[MIGRATED_v2]_" + name,
-        "type": type,
+        "name": "(migrated) " + name,
+        "type": wf_type,
         "onlyEnrollsManually": True,
         "actions": actions
     }
+    print(body)
     r = requests.post(url_create_wf(hapikey_target), json = body)
-    if not r:
+    if not r and not silent:
         print(r.text)
-        print ("Workflow " + str(newId) + " was not copied.")
-    # log the http response
-    with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
-        json.dump(r.json(), data_file, indent=2)
+        print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") was not copied.")
+    elif not silent:
+        print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") successfully copied.")
+    return r
+
+def copy_all_workflows(hapikey_origin, hapikey_target):
+    all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
+    for workflow in all_workflows:
+        id = workflow["id"]
+        newId = workflow["migrationStatus"]["flowId"]
+        r = copy_workflow(id, hapikey_origin, hapikey_target, silent=True)
+        # log the http response
+        #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
+        #    json.dump(r.json(), data_file, indent=2)
+
+if __name__ == "__main__":
+   copy_all_workflows(hapikey_origin, hapikey_target)
+   

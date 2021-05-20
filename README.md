@@ -5,7 +5,7 @@
 ## Useful files in this repo
 
 * "technical_limitations.md": a breakdown of what can be migrated with the current version of the public Workflows API
-* "2_process_and_copy.py": the actual proof-of-concept migration script, with a lot of stub/dummy/simplification in it
+* "workflow_copy.py": the actual proof-of-concept migration script, with a lot of stub/dummy/simplification in it
 * "action_schemata.json" contain processing schemata for all workflow action types
 
 ## Configuration
@@ -43,7 +43,7 @@ NOTE: Any mappings supplied as configuration are NOT being applied by the script
 
 ## How to run
 
-Run "2_process_and_copy.py" in a Python interpreter. Tested using Python 3.8.6 on MacOS 10.15.7 (note there are no actual tests yet).
+Run "workflow_copy.py" in a Python interpreter, or import the "copy_workflow" function for interactive use. Tested using Python 3.8.6 on MacOS 10.15.7 (note there are no actual tests yet).
 
 NOTE: Right now the script will not in fact apply any ID mappings, and it will presume the existence of all properties. To run this script, please set the origin portal and the target portal api keys to the SAME key. The script will make copies of all workflows in the portal. This is obviously only safe in portals that exist for testing purposes only.
 
