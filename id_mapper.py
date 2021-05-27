@@ -1,39 +1,73 @@
 import json
 
 ###
-# Missing: read the actual mappings from configuration file
+# Configuration
 ###
 
+with open("id_mappings.json", "r") as read_file:
+    id_mappings = json.load(read_file)
+
 ###
-# Stub getter functions
+# Getter functions
 ###
 
 def get_workflowId(id):
     # WORKFLOW_ENROLLMENT
+    if id in id_mappings["workflowId"]["map"]:
+        id = id_mappings["workflowId"]["map"]["id"]
+    elif id_mappings["workflowId"]["fallback"]:
+        id = id_mappings["workflowId"]["fallback"]
     return id
 
 def get_emailContentId(id):
-    #NOTIFICATION, EMAIL
+    # NOTIFICATION, EMAIL
+    if id in id_mappings["emailContentId"]["map"]:
+        id = id_mappings["emailContentId"]["map"]["id"]
+    elif id_mappings["emailContentId"]["fallback"]:
+        id = id_mappings["emailContentId"]["fallback"]
     return id
 
 def get_userId(id):
     # SMS_NOTIFICATION
+    if id in id_mappings["userId"]["map"]:
+        id = id_mappings["userId"]["map"]["id"]
+    elif id_mappings["userId"]["fallback"]:
+        id = id_mappings["userId"]["fallback"]
     return id
 
 def get_teamId(id):
-    # SMS_NOTIFICATION
+    # LEAD_ASSIGNMENT
+    if id is None:
+        return id
+    elif id in id_mappings["teamId"]["map"]:
+        id = id_mappings["teamId"]["map"]["id"]
+    elif id_mappings["teamId"]["fallback"]:
+        id = id_mappings["teamId"]["fallback"]
+    # is either None or single-valued
     return id
 
 def get_ownerId(id):
     # DEAL, TASK
+    if id in id_mappings["ownerId"]["map"]:
+        id = id_mappings["ownerId"]["map"]["id"]
+    elif id_mappings["ownerId"]["fallback"]:
+        id = id_mappings["ownerId"]["fallback"]
     return id
 
 def get_listId(id):
     # UPDATE_LIST
+    if id in id_mappings["workflowId"]["map"]:
+        id = id_mappings["workflowId"]["map"]["id"]
+    elif id_mappings["workflowId"]["fallback"]:
+        id = id_mappings["workflowId"]["fallback"]
     return id
 
 def get_subscriptionId(id):
     # UPDATE_EMAIL_SUBSCRIPTION
+    if id in id_mappings["subscriptionId"]["map"]:
+        id = id_mappings["subscriptionId"]["map"]["id"]
+    elif id_mappings["subscriptionId"]["fallback"]:
+        id = id_mappings["subscriptionId"]["fallback"]
     return id
 
 def get_recipientUserIds(id_list):
@@ -87,6 +121,10 @@ attribute_to_getter = {
     "owners": get_owners,
     "filters": get_filters
 }
+
+###
+# External interface
+###
 
 def get_target_id(attribute, value_origin):
     return attribute_to_getter[attribute](value_origin)

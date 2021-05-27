@@ -71,7 +71,7 @@
     "LEAD_ASSIGNMENT": {
         "owners": "SUBSTITUTE",
         "overwriteCurrentOwner": "PASS",
-        "teamId": "NOT_IMPLEMENTED",
+        "teamId": "SUBSTITUTE",
         "ownerProperty": "PASS",
         "type": "PASS",
         "stepId": "DROP",

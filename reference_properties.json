@@ -1,0 +1,15 @@
+{
+    "company": [
+        "name",
+        "domain"
+    ],
+    "deal": [
+        "createdate",
+        "amount",
+        "name"
+    ],
+    "ticket": [
+        "createdate",
+        "name"
+    ]
+}
