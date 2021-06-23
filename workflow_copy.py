@@ -56,7 +56,14 @@ def apply_schema(node):
         elif schema[attribute]=="PASS":
             node_copy[attribute] = node[attribute]
         elif schema[attribute]=="SUBSTITUTE":
-            node_copy[attribute] = get_target_id(attribute, node[attribute])
+            if node[attribute] is None:
+                node_copy[attribute] = None
+            else:
+                substitution_result = get_target_id(attribute, node[attribute])
+                if substitution_result is None:
+                    return [create_placeholder(node)]
+                else:
+                    node_copy[attribute] = substitution_result
     # special cases
     def ambiguous_prop(prop):
         obj_with_prop = [obj for obj in reference_properties if prop in reference_properties[obj]]
@@ -113,7 +120,7 @@ def process_actions(actions, node_processor):
 # Workflow copy functions
 #-------------
 
-def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix=""):
+def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix="", simulate=False):
     workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     wf_type = workflow["type"]
     name = workflow["name"]
@@ -125,8 +132,12 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         "onlyEnrollsManually": True,
         "actions": actions
     }
-    print(body)
-    r = requests.post(url_create_wf(hapikey_target), json = body)
+    # print(body)
+    if simulate:
+        r = {"text": "not really doing anything"}
+        silent = True
+    else:
+        r = requests.post(url_create_wf(hapikey_target), json = body)
     if not r and not silent:
         print(r.text)
         print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") was not copied.")
@@ -134,17 +145,16 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") successfully copied.")
     return r
 
-def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_"):
+def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_", simulate=False):
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
     for workflow in all_workflows:
         id = workflow["id"]
         newId = workflow["migrationStatus"]["flowId"]
-        r = copy_workflow(id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix)
+        r = copy_workflow(id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix, simulate=simulate)
         # log the http response
         #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
         #    json.dump(r.json(), data_file, indent=2)
 
 if __name__ == "__main__":
-    # copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True)
-    copy_workflow(25755819)
-   
+    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=True)
+    #copy_workflow(25755819)
