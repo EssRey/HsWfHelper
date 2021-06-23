@@ -72,23 +72,29 @@ def get_subscriptionId(obj_id):
 
 def get_recipientUserIds(id_list):
     # NOTIFICATION_STATION
+    id_list_copy = []
     if isinstance(id_list, list):
         for obj_id in id_list:
-            obj_id = get_userId(obj_id)
+            id_list_copy.append(get_userId(obj_id))
+        return id_list_copy
     return id_list
 
 def get_recipientTeamIds(id_list):
     # NOTIFICATION_STATION
+    id_list_copy = []
     if isinstance(id_list, list):
         for obj_id in id_list:
-            obj_id = get_teamId(obj_id)
+            id_list_copy.append(get_teamId(obj_id))
+        return id_list_copy
     return id_list
 
 def get_owners(id_list):
     # LEAD_ASSIGNMENT
+    id_list_copy = []
     if isinstance(id_list, list):
         for obj_id in id_list:
-            obj_id = get_ownerId(obj_id)
+            id_list_copy.append(get_ownerId(obj_id))
+        return id_list_copy
     return id_list
 
 def get_filters(filters):
