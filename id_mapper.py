@@ -11,84 +11,84 @@ with open("id_mappings.json", "r") as read_file:
 # Getter functions
 ###
 
-def get_workflowId(id):
+def get_workflowId(obj_id):
     # WORKFLOW_ENROLLMENT
-    if id in id_mappings["workflowId"]["map"]:
-        id = id_mappings["workflowId"]["map"]["id"]
+    if obj_id in id_mappings["workflowId"]["map"]:
+        obj_id = id_mappings["workflowId"]["map"]["id"]
     elif id_mappings["workflowId"]["fallback"]:
-        id = id_mappings["workflowId"]["fallback"]
-    return id
+        obj_id = id_mappings["workflowId"]["fallback"]
+    return obj_id
 
-def get_emailContentId(id):
+def get_emailContentId(obj_id):
     # NOTIFICATION, EMAIL
-    if id in id_mappings["emailContentId"]["map"]:
-        id = id_mappings["emailContentId"]["map"]["id"]
+    if obj_id in id_mappings["emailContentId"]["map"]:
+        obj_id = id_mappings["emailContentId"]["map"]["id"]
     elif id_mappings["emailContentId"]["fallback"]:
-        id = id_mappings["emailContentId"]["fallback"]
-    return id
+        obj_id = id_mappings["emailContentId"]["fallback"]
+    return obj_id
 
-def get_userId(id):
+def get_userId(obj_id):
     # SMS_NOTIFICATION
-    if id in id_mappings["userId"]["map"]:
-        id = id_mappings["userId"]["map"]["id"]
+    if obj_id in id_mappings["userId"]["map"]:
+        obj_id = id_mappings["userId"]["map"]["id"]
     elif id_mappings["userId"]["fallback"]:
-        id = id_mappings["userId"]["fallback"]
-    return id
+        obj_id = id_mappings["userId"]["fallback"]
+    return obj_id
 
-def get_teamId(id):
+def get_teamId(obj_id):
     # LEAD_ASSIGNMENT
-    if id is None:
-        return id
-    elif id in id_mappings["teamId"]["map"]:
-        id = id_mappings["teamId"]["map"]["id"]
+    if obj_id is None:
+        return obj_id
+    elif obj_id in id_mappings["teamId"]["map"]:
+        obj_id = id_mappings["teamId"]["map"]["id"]
     elif id_mappings["teamId"]["fallback"]:
-        id = id_mappings["teamId"]["fallback"]
+        obj_id = id_mappings["teamId"]["fallback"]
     # is either None or single-valued
-    return id
+    return obj_id
 
-def get_ownerId(id):
+def get_ownerId(obj_id):
     # DEAL, TASK
-    if id in id_mappings["ownerId"]["map"]:
-        id = id_mappings["ownerId"]["map"]["id"]
+    if obj_id in id_mappings["ownerId"]["map"]:
+        obj_id = id_mappings["ownerId"]["map"]["id"]
     elif id_mappings["ownerId"]["fallback"]:
-        id = id_mappings["ownerId"]["fallback"]
-    return id
+        obj_id = id_mappings["ownerId"]["fallback"]
+    return obj_id
 
-def get_listId(id):
+def get_listId(obj_id):
     # UPDATE_LIST
-    if id in id_mappings["workflowId"]["map"]:
-        id = id_mappings["workflowId"]["map"]["id"]
+    if obj_id in id_mappings["workflowId"]["map"]:
+        obj_id = id_mappings["workflowId"]["map"]["id"]
     elif id_mappings["workflowId"]["fallback"]:
-        id = id_mappings["workflowId"]["fallback"]
-    return id
+        obj_id = id_mappings["workflowId"]["fallback"]
+    return obj_id
 
-def get_subscriptionId(id):
+def get_subscriptionId(obj_id):
     # UPDATE_EMAIL_SUBSCRIPTION
-    if id in id_mappings["subscriptionId"]["map"]:
-        id = id_mappings["subscriptionId"]["map"]["id"]
+    if obj_id in id_mappings["subscriptionId"]["map"]:
+        obj_id = id_mappings["subscriptionId"]["map"]["id"]
     elif id_mappings["subscriptionId"]["fallback"]:
-        id = id_mappings["subscriptionId"]["fallback"]
-    return id
+        obj_id = id_mappings["subscriptionId"]["fallback"]
+    return obj_id
 
 def get_recipientUserIds(id_list):
     # NOTIFICATION_STATION
     if isinstance(id_list, list):
-        for id in id_list:
-            id = get_userId(id)
+        for obj_id in id_list:
+            obj_id = get_userId(obj_id)
     return id_list
 
 def get_recipientTeamIds(id_list):
     # NOTIFICATION_STATION
     if isinstance(id_list, list):
-        for id in id_list:
-            id = get_teamId(id)
+        for obj_id in id_list:
+            obj_id = get_teamId(obj_id)
     return id_list
 
 def get_owners(id_list):
     # LEAD_ASSIGNMENT
     if isinstance(id_list, list):
-        for id in id_list:
-            id = get_ownerId(id)
+        for obj_id in id_list:
+            obj_id = get_ownerId(obj_id)
     return id_list
 
 def get_filters(filters):
