@@ -122,6 +122,7 @@ def process_actions(actions, node_processor):
 
 def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix="", simulate=False):
     workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+    print(workflow)
     wf_type = workflow["type"]
     name = workflow["name"]
     newId = workflow["migrationStatus"]["flowId"]
@@ -156,5 +157,5 @@ def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
         #    json.dump(r.json(), data_file, indent=2)
 
 if __name__ == "__main__":
-    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=True)
-    #copy_workflow(25755819)
+    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=True)
+    copy_workflow(25755819, simulate=True)
