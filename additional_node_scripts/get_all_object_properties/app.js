@@ -21,7 +21,8 @@ const getQuoteProperties = () => {
     return axios.get(`https://api.hubapi.com/crm/v3/properties/quotes?hapikey=${apiKey}`);
 }
 
-/* const getConversationsProperties = () => {
+/*  Conversations currently providing error 
+    const getConversationsProperties = () => {
     return axios.get(`https://api.hubapi.com/crm/v3/properties/companies?hapikey=${apiKey}`);
 } */
 
@@ -69,7 +70,8 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             }
         }
 
+        //creating JSON-Output and saving it to /results directory
         let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties};
         finalJson = JSON.stringify(finalJson, null, 2);
-        fs.writeFileSync('additional_node_scripts/get_all_object_properties/result/test.json', finalJson);
+        fs.writeFileSync('result/object_properties.json', finalJson);
     });

@@ -1,6 +1,8 @@
 # Environments
 .env
 .DS_Store
+additional_node_scripts/get_all_object_properties/.env
+
 
 # Custom
 not_ready/
