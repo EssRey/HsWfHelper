@@ -48,4 +48,3 @@ Then format this data into a JSON string and write it to an output file (../../r
 1. Not sure if there may be a case where a "quote" or "conversation" object does not exist (maybe some small or legacy license?). In that case, it would be safe to simply keep the property array associated with the particular object empty (just like in the sample json above).
 2. For the time being, please ensure this program does not overwrite the existing "reference_properties.json" file ("../../reference_properties.json")
 3. This program should abort if it encounters any errors (except if they can be resolved via retries etc.) -- a potentially-incomplete json file could create big problems down the road.
-4. Philip -- can you please delete this very point (#4) as a pull request to test our collaboration flow? Thanks!
