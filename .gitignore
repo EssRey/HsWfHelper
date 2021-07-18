@@ -2,7 +2,7 @@
 .env
 .DS_Store
 additional_node_scripts/get_all_object_properties/.env
-
+additional_node_scripts/enrollment_history_to_multiple_checkbox/.env
 
 # Custom
 not_ready/
