@@ -1,7 +1,7 @@
 require('dotenv').config({ path: '../../.env'});
 const fs = require('fs');
 const axios = require('axios').default;
-const apiKey = process.env.apiKey;
+const apiKey = process.env.HAPIKEY_ORIGIN;
 
 //create api-call functions
 const getCompanyProperties = () => {
