@@ -5,9 +5,14 @@ const StaticList = require('./staticListConstructor');
 const axios = require('axios');
 const fs = require('fs');
 
+//Format required endpoints
 const getListsEndpoint = 'https://api.hubapi.com/contacts/v1/lists/static?hapikey=' + apiKeyOrigin;
 const createListEndpoint = 'https://api.hubapi.com/contacts/v1/lists?hapikey=' + apiKeyTarget;
 
+  /**
+   * Gets data for all static lists from origin portal
+   * @return {Object}       Object containing an array of objects. Each object within array represents one list with its data.
+   */
 const getStaticListsOrigin = async () => {     
     try {
         const res = await axios.get(getListsEndpoint);
@@ -19,6 +24,11 @@ const getStaticListsOrigin = async () => {
     }
 }
 
+  /**
+   * Recreates lists in target portal and creates a mappingJson.
+   * @param  {Object} data  array of lists that are to be recreated.
+   * @return {file}         listIdMapping.json in global results-directory.
+   */
 const cloneListsIntoTarget = async (data) => {
     let finalJson = '{\n'
 
@@ -40,6 +50,6 @@ const cloneListsIntoTarget = async (data) => {
 }
 
 
-
+//Execution 
 getStaticListsOrigin()
     .then(data => cloneListsIntoTarget(data));
