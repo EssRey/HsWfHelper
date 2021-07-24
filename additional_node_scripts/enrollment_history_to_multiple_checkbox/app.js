@@ -49,9 +49,10 @@ const getContactsByListId = async () => {
         return axios.get(listURL)
             .then(res => {
 
+                const key = workflow.flowId_workflowId;
+
                 return {
-                    workflow_Id: workflow.flowId_workflowId,
-                    contacts: res.data.contacts
+                    [key]: res.data.contacts
                 };
             }
         );
