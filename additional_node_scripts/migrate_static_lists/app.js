@@ -38,7 +38,7 @@ const cloneListsIntoTarget = async (data) => {
         let listName = data.lists[i].name;
         let listOldId= data.lists[i].listId;
         listIdArray.push(listOldId);
-       /* try {
+        try {
             const res = await axios.post(createListEndpoint,{"name":`${listName}`});
             listNewId = res.data.listId;
             finalJson = finalJson + `"${listOldId}":"${listNewId}", \n`;
@@ -46,10 +46,10 @@ const cloneListsIntoTarget = async (data) => {
         } catch(err) {
             finalJson = finalJson + `"${listOldId}":ERROR, `;
             console.log(i + ': ' +err);
-        } */
+        } 
     }
-   /* finalJson = finalJson.slice(0, -3) + '\n}';
-    fs.writeFileSync('../../results/listIdMapping.json', finalJson); */
+    finalJson = finalJson.slice(0, -3) + '\n}';
+    fs.writeFileSync('../../results/listIdMapping.json', finalJson); 
     return listIdArray;
 }
 

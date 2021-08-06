@@ -1,8 +1,12 @@
 # Environments
 .env
 .DS_Store
+node_modules*
+package*
 additional_node_scripts/get_all_object_properties/.env
 additional_node_scripts/enrollment_history_to_multiple_checkbox/.env
+results/*
+additional_node_scripts/migrate_static_lists/staticListsWithContacts/*
 
 # Custom
 not_ready/
