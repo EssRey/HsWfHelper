@@ -4,43 +4,38 @@ const axios = require('axios').default;
 const targetHapiKey = process.env.HAPIKEY_TARGET;
 const wfsData = require('./results/contactsByList');
 
-// Should pull Email instead to POST to Target Portal 
+// Todo: Error handling, retries on rate limits (batch limited to 1000 contacts)
 
-const concatWorkflowsByVid = () => {
+// consolidated concat func and create property function for one loop through contacts_by_list
+const createPropConcatWFs = () => {
+
     const array = wfsData.contacts_by_list;
+    const propertyOptions = [];
 
-    const list = array.reduce((newObj, wfInstance) => {
+    // create obj with email: semicolon separated wfids (formatted to update multicheck property)
+    const wfIdsByEmail = array.reduce((newObj, wfInstance) => {
 
         let wfId = Object.keys(wfInstance)[0]; 
 
-        if (wfInstance[wfId].length) {
-            wfInstance[wfId].forEach(contact => {
-                let vid = contact.vid;
-                // let email = contact['identity-profiles'][0].identities[0].value;
+        // push wfids as options in multicheck property
+        propertyOptions.push({"label": wfId, "value": wfId});
 
-                newObj.hasOwnProperty(vid) ? newObj[vid] = newObj[vid] += `, ${wfId}` : newObj[vid] = wfId;
-                // newObj.hasOwnProperty(email) ? newObj[email] = newObj[email] += `, ${wfId}` : newObj[email] = wfId;
+            wfInstance[wfId].forEach(contact => {
+
+                if (wfInstance[wfId].length) {
+
+                    let email = contact['identity-profiles'][0].identities[0].value;
+
+                    newObj.hasOwnProperty(email) ? newObj[email] = newObj[email] += `;${wfId}` : newObj[email] = wfId;
+                }
                 
             });
-        }
         
         return newObj;
         
     }, {});
 
-    console.log(list);
-}
-
-const createMulticheckProperty = () => {
-    const propertyOptions = [];
-
-    // TODO: Refactor - Already looping through contacts_by_list in concatWorkflowsByVid for wfId
-
-    wfsData.contacts_by_list.forEach(wfInstance => {
-        let wfId = Object.keys(wfInstance)[0];
-        propertyOptions.push({"label": wfId, "value": wfId});
-    })
-
+    // obj to create multicheck property with wfids as options
     const propertyObj = {
         "name": "workflow_ids",
         "label": "Workflow IDs",
@@ -53,7 +48,44 @@ const createMulticheckProperty = () => {
         "formField": false
     };
 
+    // create custom property in target portal
+    // Todo: Check if property exists? 
+
     axios.post(`https://api.hubapi.com/properties/v1/contacts/properties?hapikey=${targetHapiKey}`, propertyObj)
+        .then(res => {
+            console.log(res);
+        })
+        .catch(e => {
+            console.log(e);
+        });
+
+    return wfIdsByEmail;
+}
+
+const updatePropertyByEmail = async () => {
+
+    const wfIdsByEmail = await createPropConcatWFs();
+
+    if (!Object.keys(wfIdsByEmail).length) {
+
+        throw new Error('No contacts to update');
+    }
+
+    let targetPortalContactsToUpdate = [];
+
+    for (key in wfIdsByEmail) {
+        targetPortalContactsToUpdate.push({
+            "email": key,
+            "properties": [
+                {
+                    "property": "workflow_ids",
+                    "value": wfIdsByEmail[key]
+                }
+            ]
+        });
+    }    
+
+    axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, targetPortalContactsToUpdate)
         .then(res => {
             console.log(res);
         })
@@ -62,5 +94,4 @@ const createMulticheckProperty = () => {
         });
 }
 
-// concatWorkflowsByVid();
-createMulticheckProperty();
+updatePropertyByEmail();
