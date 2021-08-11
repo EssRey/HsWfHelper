@@ -16,10 +16,6 @@ const getContactIdLists = async () => {
         throw new Error('Could not get workflows');
     }
 
-    // console.log(workflowsData);
-
-    // writeWfsFile(workflowsData);
-
     let contactListIds = [];
 
     for (workflow of workflowsData) {
@@ -28,10 +24,6 @@ const getContactIdLists = async () => {
             contactListIds: workflow.contactListIds
         });
     }    
-
-    // console.log(contactListIdsArr);
-
-    // writeContactListIdsFile(contactListIds);
 
     return contactListIds;
 
@@ -64,38 +56,10 @@ const getContactsByListId = async () => {
 
 }
 
-getContactsByListId().then(res => {
-    console.log(res);
-
-    // loop through array and create property in target portal
-    // multicheckbox with ALL workflow Ids
-    
-    // might roll this into a separate file
-
-});
-
-// Temp functions
-
-function writeWfsFile(workflows) {
-    let workflowsJson = {"workflows": workflows};
-    testFile = JSON.stringify(workflowsJson, null, 2);
-    fs.writeFileSync('results/workflows.json', testFile);
-}
-
-function writeContactListIdsFile(contactListIds) {
-    let contactIdsJson = {"workflow_lists": contactListIds};
-    testFile = JSON.stringify(contactIdsJson, null, 2);
-    fs.writeFileSync('results/contactListIds.json', testFile);
-}
+getContactsByListId()
 
 function writeContactsByListFile(contactsByList) {
     let contactsByListJson = {"contacts_by_list": contactsByList};
     testFile = JSON.stringify(contactsByListJson, null, 2);
     fs.writeFileSync('results/contactsByList.json', testFile);
-}
-
-// Todo: One function for writing test files (Temp)
-
-function writeJsonFile(objName, fileName, data) {
-
 }
