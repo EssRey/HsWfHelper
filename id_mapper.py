@@ -133,4 +133,8 @@ attribute_to_getter = {
 ###
 
 def get_target_id(attribute, value_origin):
+    # will look up the mapping in id_mappings.json
+    # if there is no mapping it will apply any fallback value provided
+    # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
+    # (remove mappings and fallback if an ID should not be changed)
     return attribute_to_getter[attribute](value_origin)

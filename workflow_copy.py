@@ -4,6 +4,7 @@
 import requests, json
 from dotenv import dotenv_values
 from id_mapper import get_target_id
+from wf_key_mapper import get_wf_key_value
 
 #-------------
 # Configuration
@@ -17,6 +18,8 @@ with open("action_schemata.json", "r") as read_file:
 with open("reference_properties.json", "r") as read_file:
     reference_properties = json.load(read_file)
 # note that the ID mappings (currently as stub) is managed in the id_mapper.py module; TO DO streamline config
+with open("wf_schema.json", "r") as read_file:
+    wf_schema = json.load(read_file)
 
 #-------------
 # URL getters
@@ -120,20 +123,39 @@ def process_actions(actions, node_processor):
 # Workflow copy functions
 #-------------
 
-def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix="", simulate=False):
+def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False):
     workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     print(workflow)
-    wf_type = workflow["type"]
-    name = workflow["name"]
-    newId = workflow["migrationStatus"]["flowId"]
     actions = process_actions(workflow["actions"], apply_schema)
-    body = {
-        "name": str(prefix) + name,
-        "type": wf_type,
-        "onlyEnrollsManually": True,
+    target_workflow = {
         "actions": actions
     }
+    for key in workflow:
+        if key not in wf_schema:
+            print("[Warning] Unknown workflow key: " + str(key) + " (skip and proceed)")
+        else:
+            if wf_schema[key]=="SUBSTITUTE":
+                target_workflow[key] = get_wf_key_value(key, workflow[key])
+            elif wf_schema[key]=="PASS":
+                target_workflow[key] = workflow[key]
+    return target_workflow
+
+
+def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix="", simulate=False):
+    #workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+    #print(workflow)
+    #wf_type = workflow["type"]
+    #name = workflow["name"]
+    #newId = workflow["migrationStatus"]["flowId"]
+    #actions = process_actions(workflow["actions"], apply_schema)
+    #body = {
+    #    "name": str(prefix) + name,
+    #    "type": wf_type,
+    #    "onlyEnrollsManually": True,
+    #    "actions": actions
+    #}
     # print(body)
+    body = process_workflow(workflow_id)
     if simulate:
         r = {"text": "not really doing anything"}
         silent = True
@@ -141,21 +163,40 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         r = requests.post(url_create_wf(hapikey_target), json = body)
     if not r and not silent:
         print(r.text)
-        print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") was not copied.")
+        print ("Workflow " + str(workflow_id) + " was not copied.")
     elif not silent:
-        print ("Workflow " + str(workflow_id) + " (flowId: " + str(newId) + ") successfully copied.")
+        print ("Workflow " + str(workflow_id) + " successfully copied.")
     return r
 
 def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_", simulate=False):
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
     for workflow in all_workflows:
-        id = workflow["id"]
+        workflow_id = workflow["id"]
         newId = workflow["migrationStatus"]["flowId"]
-        r = copy_workflow(id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix, simulate=simulate)
+        r = copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix, simulate=simulate)
         # log the http response
         #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
         #    json.dump(r.json(), data_file, indent=2)
 
+#temp
+def dump_all_workflows(hapikey_origin=hapikey_origin):
+    wf_list=[]
+    wf_key_set=set()
+    all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
+    for workflow in all_workflows:
+        workflow_id = workflow["id"]
+        workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+        wf_keys=set(workflow.keys())
+        wf_key_set=wf_key_set.union(wf_keys)
+        workflow["actions"]=[]
+        wf_list.append(workflow)
+    with open("playground/logs/non_drip_workflows_dump.json", "w") as f:
+        for wf in wf_list:
+            if wf["type"] != "DRIP_DELAY":
+                f.write("%s\n" % wf)
+    print(wf_key_set)
+
 if __name__ == "__main__":
     #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=True)
-    copy_workflow(25755819, simulate=True)
+    copy_workflow(5054805, simulate=False)
+    #dump_all_workflows()
