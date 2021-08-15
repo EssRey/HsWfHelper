@@ -1,7 +1,7 @@
 {
     "actions": "DROP_SPECIAL",
     "type": "PASS",
-    "eventAnchor": "PASS",
+    "eventAnchor": "SUBSTITUTE",
     "unenrollmentSetting": "SUBSTITUTE",
     "goalCriteria": "SUBSTITUTE",
     "name": "SUBSTITUTE",

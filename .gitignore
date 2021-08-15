@@ -12,6 +12,7 @@ additional_node_scripts/migrate_static_lists/staticListsWithContacts/*
 
 # Custom
 not_ready/
+id_mappings/
 misc_docs/
 playground/
 __pycache__/

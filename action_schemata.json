@@ -26,7 +26,7 @@
         "workflowId": "SUBSTITUTE"
     },
     "WEBHOOK": {
-        "method": "PASS",
+        "method": "DROP",
         "url": "PASS",
         "appId": "NOT_IMPLEMENTED",
         "type": "PASS",
@@ -42,7 +42,7 @@
         "actionId": "DROP"
     },
     "SMS_NOTIFICATION": {
-        "staticTo": "PASS",
+        "staticTo": "NOT_IMPLEMENTED",
         "userId": "SUBSTITUTE",
         "type": "PASS",
         "stepId": "DROP",
@@ -188,7 +188,7 @@
         "type": "PASS",
         "stepId": "DROP",
         "actionId": "DROP",
-        "campaignId": "PASS"
+        "campaignId": "NOT_IMPLEMENTED"
     },
     "ADD_CONTACT_ENUM_PROPERTY": {
         "isReplacement": "PASS",

@@ -5,6 +5,7 @@ import requests, json
 from dotenv import dotenv_values
 from id_mapper import get_target_id
 from wf_key_mapper import get_wf_key_value
+import time
 
 #-------------
 # Configuration
@@ -39,6 +40,9 @@ def create_placeholder(placeholder_content):
              "propertyName": "message",
              "newValue": json.dumps(placeholder_content)
              }
+    #if "anchorSetting" in placeholder_content:
+    #    pass
+    #    placeholder_node["anchorSetting"] = placeholder_content["anchorSetting"]
     return placeholder_node
 
 #-------------
@@ -72,7 +76,7 @@ def apply_schema(node):
         obj_with_prop = [obj for obj in reference_properties if prop in reference_properties[obj]]
         return obj_with_prop != ["company"]
     ## identify "delay until time of day or day of the week" actions
-    if node_copy["type"] == "DELAY" and node_copy["delayMillis"] == 0:
+    if node_copy["type"] == "DELAY" and node_copy["delayMillis"] == 0 and "anchorSetting" not in node_copy:
         return [create_placeholder(node_copy)]
     ## identify set/copy property actions with a property that cannot be uniquely matched to contact or company
     elif node_copy["type"] == "SET_COMPANY_PROPERTY":
@@ -90,6 +94,9 @@ def apply_schema(node):
     ## flag possibly missing team IDs in the lead rotation action
     elif node_copy["type"] == "LEAD_ASSIGNMENT" and node_copy["teamId"] is not None:
         return [create_placeholder("TODO: check for missing Teams selected in following lead roation action."), node_copy]
+    ## unassigned tasks now possible via UI, but API will error out
+    elif node_copy["type"] == "TASK" and node_copy["ownerId"] is None and node_copy["ownerProperty"] is None:
+        return [create_placeholder(node_copy)]
     ## any owner recipient in the "Send in-app notification" action need to be checked manually
     elif node_copy["type"] == "NOTIFICATION_STATION":
         if node_copy["recipientUserIds"] == [] and node_copy["recipientTeamIds"] == []:
@@ -124,8 +131,12 @@ def process_actions(actions, node_processor):
 #-------------
 
 def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False):
-    workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
-    print(workflow)
+    try:
+        workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+    except:
+        print("crazy retry pause starts")
+        time.sleep(10)
+        workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     actions = process_actions(workflow["actions"], apply_schema)
     target_workflow = {
         "actions": actions
@@ -162,10 +173,14 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
     else:
         r = requests.post(url_create_wf(hapikey_target), json = body)
     if not r and not silent:
-        print(r.text)
-        print ("Workflow " + str(workflow_id) + " was not copied.")
+        #print(r.text)
+        print(workflow_id)
+        #print ("Workflow " + str(workflow_id) + " was not copied.")
+        with open("playground/logs/wf_v7_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+            json.dump(r.json(), data_file, indent=2)
     elif not silent:
-        print ("Workflow " + str(workflow_id) + " successfully copied.")
+        pass
+        #print ("Workflow " + str(workflow_id) + " successfully copied.")
     return r
 
 def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_", simulate=False):
@@ -175,10 +190,10 @@ def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
         newId = workflow["migrationStatus"]["flowId"]
         r = copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix, simulate=simulate)
         # log the http response
-        #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(id)+".json", "w") as data_file:
+        #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(workflow_id)+".json", "w") as data_file:
         #    json.dump(r.json(), data_file, indent=2)
 
-#temp
+#temporary convenience function (for testing and inspection)
 def dump_all_workflows(hapikey_origin=hapikey_origin):
     wf_list=[]
     wf_key_set=set()
@@ -197,6 +212,7 @@ def dump_all_workflows(hapikey_origin=hapikey_origin):
     print(wf_key_set)
 
 if __name__ == "__main__":
-    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=True)
-    copy_workflow(5054805, simulate=False)
+    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
+    #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
+    #    copy_workflow(w_id, silent=False, simulate=False)
     #dump_all_workflows()

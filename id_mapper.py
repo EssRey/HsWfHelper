@@ -1,4 +1,5 @@
 import json
+from segment_parser import parse_segments
 
 ###
 # Configuration
@@ -112,7 +113,8 @@ def get_filters(filters):
         ]
     ]
     """
-    return json.loads(dummy_filter)
+    #return json.loads(dummy_filter)
+    return parse_segments(filters)
 
 attribute_to_getter = {
     "workflowId": get_workflowId,
