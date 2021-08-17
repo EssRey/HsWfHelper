@@ -37,7 +37,8 @@ contactArrays = listsArray
     .filter(list => list != 'empty')
     .sort((a, b) => a[0]-b[0])
     .forEach(async list =>  {
-        const [listIdOld, emailArray] = list;
+        let [listIdOld, emailArray] = list;
+        emailArray = emailArray.filter(email => email != 'noEmail');
         const listIdNew = idMapping[`${listIdOld}`]
         const addContactsToListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${listIdNew}/add?hapikey=${apiKeyTarget}`
         while(emailArray.length){
