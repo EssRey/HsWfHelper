@@ -21,9 +21,13 @@ const getQuoteProperties = () => {
 }
 
 let companyProperties = [];
+let companyOwnerProperties = [];
 let dealProperties = [];
+let dealOwnerProperties = [];
 let ticketProperties = [];
+let ticketOwnerProperties = [];
 let quoteProperties = [];
+let quoteOwnerProperties = [];
 
 //Run all api-calls --> Catch errors along the way, so promise.all will still resolve all functions
 Promise.all([getCompanyProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}), 
@@ -36,6 +40,9 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             const compRes = results[0].data;
             for (let i=0; i < compRes.results.length; i++) {
                 companyProperties.push(compRes.results[i].name);
+                if(compRes.results[i].referencedObjectType === "OWNER"){
+                    companyOwnerProperties.push(compRes.results[i].name);
+                }
             }
         }
 
@@ -44,6 +51,9 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             const dealRes = results[1].data;
             for (let i=0; i < dealRes.results.length; i++) {
                 dealProperties.push(dealRes.results[i].name);
+                if(dealRes.results[i].referencedObjectType === "OWNER"){
+                    dealOwnerProperties.push(dealRes.results[i].name);
+                }
             }
         }
         
@@ -52,6 +62,9 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             const tickRes = results[2].data;
             for (let i=0; i < tickRes.results.length; i++) {
                 ticketProperties.push(tickRes.results[i].name);
+                if(tickRes.results[i].referencedObjectType === "OWNER"){
+                    ticketOwnerProperties.push(tickRes.results[i].name);
+                }
             }
        }
         
@@ -60,6 +73,9 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             const quotRes = results[3].data;
             for (let i=0; i < quotRes.results.length; i++) {
                 quoteProperties.push(quotRes.results[i].name);
+                if(quotRes.results[i].referencedObjectType === "OWNER"){
+                    quoteOwnerProperties.push(quotRes.results[i].name);
+                }
             }
         }
 
@@ -67,4 +83,8 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
         let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties};
         finalJson = JSON.stringify(finalJson, null, 2);
         fs.writeFileSync('../../results/object_properties.json', finalJson);
+        
+        let finalOwnerJson = {"company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties};
+        finalOwnerJson = JSON.stringify(finalOwnerJson, null, 2);
+        fs.writeFileSync('../../results/object_owner_properties.json', finalOwnerJson);
     });
