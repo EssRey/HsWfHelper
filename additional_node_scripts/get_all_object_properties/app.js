@@ -20,6 +20,10 @@ const getQuoteProperties = () => {
     return axios.get(`https://api.hubapi.com/crm/v3/properties/quotes?hapikey=${apiKey}`);
 }
 
+const getProductProperties = () => {
+    return axios.get(`https://api.hubapi.com/crm/v3/properties/products?hapikey=${apiKey}`);
+}
+
 let companyProperties = [];
 let companyOwnerProperties = [];
 let dealProperties = [];
@@ -28,12 +32,15 @@ let ticketProperties = [];
 let ticketOwnerProperties = [];
 let quoteProperties = [];
 let quoteOwnerProperties = [];
+let productProperties = [];
+let productOwnerProperties = [];
 
 //Run all api-calls --> Catch errors along the way, so promise.all will still resolve all functions
 Promise.all([getCompanyProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}), 
             getDealProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
             getTicketProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}), 
-            getQuoteProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"})])
+            getQuoteProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
+            getProductProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"})])
     .then((results) => {
         // If api-call successfull, create list of company properties
         if(results[0] !== "error"){
@@ -79,12 +86,23 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             }
         }
 
+        // If api-call successfull, create list of product properties
+        if(results[4] !== "error"){
+            const prodRes = results[4].data;
+            for (let i=0; i < prodRes.results.length; i++) {
+                productProperties.push(prodRes.results[i].name);
+                if(prodRes.results[i].referencedObjectType === "OWNER"){
+                    productOwnerProperties.push(prodRes.results[i].name);
+                }
+            }
+        }
+
         //creating JSON-Output and saving it to /results directory
-        let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties};
+        let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties, "product": productProperties};
         finalJson = JSON.stringify(finalJson, null, 2);
         fs.writeFileSync('../../results/object_properties.json', finalJson);
         
-        let finalOwnerJson = {"company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties};
+        let finalOwnerJson = {"company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties, "product": productOwnerProperties};
         finalOwnerJson = JSON.stringify(finalOwnerJson, null, 2);
         fs.writeFileSync('../../results/object_owner_properties.json', finalOwnerJson);
     });
