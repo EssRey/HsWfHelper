@@ -1,0 +1,82 @@
+{
+  "COMMON": {
+    "withinLastTime": "pass",
+    "withinLastTimeUnit": "pass",
+    "withinLastDays": "pass",
+    "reverseWithinTimeWindow": "pass",
+    "withinTimeMode": "pass",
+    "maxOccurrences": "pass",
+    "minOccurrences": "pass",
+    "afterTimestamp": "pass",
+    "beforeTimestamp": "pass",
+    "operator": "pass",
+    "filterFamily": "pass"
+  },
+  "Email": {
+    "emailEventFilter": "DICT_emailEventFilter"
+  },
+  "FormSubmission": {
+    "page": "ID_pageId",
+    "form": "ID_formId"
+  },
+  "PropertyValue": {
+    "property": "PROP_contact_property",
+    "value": "pass",
+    "type": "pass",
+    "checkPastVersions": "pass",
+    "propertyObjectType": "pass",
+    "compareProperty": "PROP_contact_property"
+  },
+  "ListMembership": {
+    "list": "ID_listId",
+    "dynamicList": "pass"
+  },
+  "Engagement": {
+    "propertyObjectType": "pass",
+    "engagementsFilter": "DICT_engagementsFilter"
+  },
+  "CTA": {
+    "value": "ID_ctaId"
+  },
+  "PageView": {
+    "value": "pass"
+  },
+  "Workflow": {
+    "list": "?(can drop?)",
+    "workflowId": "ID_workflowId",
+    "dynamicList": "?"
+  },
+  "Subscriptions": {
+    "subscriptionsFilter": "DICT_subscriptionsFilter"
+  },
+  "CompanyPropertyValue": {
+      "propertyObjectType": "pass",
+      "property": "PROP_company_property",
+      "value": "pass",
+      "type": "pass",
+      "checkPastVersions": "pass",
+      "compareProperty": "PROP_company_property"
+    },
+  "Event": {
+    "value": "pass"
+  },
+  "Import": {
+    "importId": "DO_NOT_PROCESS"
+  },
+  "Ads": {
+    "adsInteractionFilter": "DO_NOT_PROCESS",
+    "type": "pass"
+  },
+  "IntegrationsTimeline": {
+    "integrationsTimelineFilter": "DO_NOT_PROCESS"
+  },
+  "DealProperty": {
+    "dealsFilter": "DICT_dealsFilter",
+    "propertyObjectType": "pass",
+    "type": "pass",
+    "property": "PROP_deal_or_lineitem_property",
+    "value": "pass",
+    "checkPastVersions": "pass",
+    "compareProperty": "PROP_deal_or_lineitem_property"
+  }
+}

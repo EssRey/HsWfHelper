@@ -6,6 +6,7 @@ from dotenv import dotenv_values
 from id_mapper import get_target_id
 from wf_key_mapper import get_wf_key_value
 import time
+#from segment_parser import get_log
 
 #-------------
 # Configuration
@@ -198,6 +199,7 @@ def dump_all_workflows(hapikey_origin=hapikey_origin):
     wf_list=[]
     wf_key_set=set()
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
+    print(len(all_workflows))
     for workflow in all_workflows:
         workflow_id = workflow["id"]
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
@@ -205,14 +207,15 @@ def dump_all_workflows(hapikey_origin=hapikey_origin):
         wf_key_set=wf_key_set.union(wf_keys)
         workflow["actions"]=[]
         wf_list.append(workflow)
+    print(len(wf_list))
     with open("playground/logs/non_drip_workflows_dump.json", "w") as f:
         for wf in wf_list:
-            if wf["type"] != "DRIP_DELAY":
-                f.write("%s\n" % wf)
+            f.write("%s\n" % wf)
     print(wf_key_set)
 
 if __name__ == "__main__":
-    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
+    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
     #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
     #    copy_workflow(w_id, silent=False, simulate=False)
-    #dump_all_workflows()
+    dump_all_workflows()
+    #get_log()

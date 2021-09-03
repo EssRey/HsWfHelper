@@ -47,5 +47,26 @@
             "2": "b"
         },
         "fallback": null
+    },
+    "formId": {
+        "map": {
+            "1": "a",
+            "2": "b"
+        },
+        "fallback": null
+    },
+    "pageId": {
+        "map": {
+            "1": "a",
+            "2": "b"
+        },
+        "fallback": null
+    },
+    "ctaId": {
+        "map": {
+            "1": "a",
+            "2": "b"
+        },
+        "fallback": null
     }
 }

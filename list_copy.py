@@ -84,6 +84,19 @@ def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target)
         list_id = mylist["listId"]
         r = copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target)
 
+# for debug purposes
+
+def process_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target):
+    all_lists = all_lists_raw(hapikey=hapikey_origin)
+    for mylist in all_lists:
+        list_id = mylist["listId"]
+        r = process_list(list_id, hapikey=hapikey_origin)
+
+
 if __name__ == "__main__":
-    copy_all_lists()
-    write_list_id_map()
+    #copy_all_lists()
+    from segment_parser import print_s
+    process_all_lists()
+    print_s()
+    #write_list_id_map()
+

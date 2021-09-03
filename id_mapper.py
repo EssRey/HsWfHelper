@@ -1,5 +1,4 @@
 import json
-from segment_parser import parse_segments
 
 ###
 # Configuration
@@ -57,10 +56,10 @@ def get_ownerId(obj_id):
 
 def get_listId(obj_id):
     # UPDATE_LIST
-    if obj_id in id_mappings["workflowId"]["map"]:
-        obj_id = id_mappings["workflowId"]["map"]["id"]
-    elif id_mappings["workflowId"]["fallback"]:
-        obj_id = id_mappings["workflowId"]["fallback"]
+    if obj_id in id_mappings["listId"]["map"]:
+        obj_id = id_mappings["listId"]["map"]["id"]
+    elif id_mappings["listId"]["fallback"]:
+        obj_id = id_mappings["listId"]["fallback"]
     return obj_id
 
 def get_subscriptionId(obj_id):
@@ -69,6 +68,30 @@ def get_subscriptionId(obj_id):
         obj_id = id_mappings["subscriptionId"]["map"]["id"]
     elif id_mappings["subscriptionId"]["fallback"]:
         obj_id = id_mappings["subscriptionId"]["fallback"]
+    return obj_id
+
+def get_formId(obj_id):
+    # used in segment parser
+    if obj_id in id_mappings["formId"]["map"]:
+        obj_id = id_mappings["formId"]["map"]["id"]
+    elif id_mappings["formId"]["fallback"]:
+        obj_id = id_mappings["formId"]["fallback"]
+    return obj_id
+
+def get_pageId(obj_id):
+    # used in segment parser
+    if obj_id in id_mappings["pageId"]["map"]:
+        obj_id = id_mappings["pageId"]["map"]["id"]
+    elif id_mappings["pageId"]["fallback"]:
+        obj_id = id_mappings["pageId"]["fallback"]
+    return obj_id
+
+def get_ctaId(obj_id):
+    # used in segment parser
+    if obj_id in id_mappings["ctaId"]["map"]:
+        obj_id = id_mappings["ctaId"]["map"]["id"]
+    elif id_mappings["ctaId"]["fallback"]:
+        obj_id = id_mappings["ctaId"]["fallback"]
     return obj_id
 
 def get_recipientUserIds(id_list):
@@ -98,23 +121,23 @@ def get_owners(id_list):
         return id_list_copy
     return id_list
 
-def get_filters(filters):
-    # BRANCH
-    dummy_filter = """
-    [
-        [
-            {
-                "operator": "IS_NOT_EMPTY",
-                "filterFamily": "PropertyValue",
-                "withinTimeMode": "PAST",
-                "type": "datetime",
-                "property": "createdate"
-            }
-        ]
-    ]
-    """
-    #return json.loads(dummy_filter)
-    return parse_segments(filters)
+# def get_filters(filters):
+#     # BRANCH
+#     dummy_filter = """
+#     [
+#         [
+#             {
+#                 "operator": "IS_NOT_EMPTY",
+#                 "filterFamily": "PropertyValue",
+#                 "withinTimeMode": "PAST",
+#                 "type": "datetime",
+#                 "property": "createdate"
+#             }
+#         ]
+#     ]
+#     """
+#     #return json.loads(dummy_filter)
+#     return parse_segments(filters)
 
 attribute_to_getter = {
     "workflowId": get_workflowId,
@@ -127,7 +150,10 @@ attribute_to_getter = {
     "recipientUserIds": get_recipientUserIds,
     "recipientTeamIds": get_recipientTeamIds,
     "owners": get_owners,
-    "filters": get_filters
+    #"filters": get_filters,
+    "formId": get_formId,
+    "pageId": get_pageId,
+    "ctaId": get_ctaId,
 }
 
 ###
@@ -135,8 +161,13 @@ attribute_to_getter = {
 ###
 
 def get_target_id(attribute, value_origin):
-    # will look up the mapping in id_mappings.json
-    # if there is no mapping it will apply any fallback value provided
-    # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
-    # (remove mappings and fallback if an ID should not be changed)
-    return attribute_to_getter[attribute](value_origin)
+    if value_origin is None:
+        raise ValueError("value_origin must not be None in function get_target_id")
+    elif value_origin == "":
+        return ""
+    else:
+        # will look up the mapping in id_mappings.json
+        # if there is no mapping it will apply any fallback value provided
+        # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
+        # (remove mappings and fallback if an ID should not be changed)
+        return attribute_to_getter[attribute](value_origin)
