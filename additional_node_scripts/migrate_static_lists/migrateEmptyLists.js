@@ -12,6 +12,7 @@ const getListsEndpoint = 'https://api.hubapi.com/contacts/v1/lists/static?hapike
 const createListEndpoint = 'https://api.hubapi.com/contacts/v1/lists?hapikey=' + apiKeyTarget;
 let getContactsInListEndpoint = '';
 
+//Sleeper function to pause execution, when burst limits are reached
 const sleep = (ms) => {
     const date = Date.now();
     let currentDate = null;
@@ -21,6 +22,7 @@ const sleep = (ms) => {
       
 }
 
+//Evaluates whether burst limit reached or not -> Calls sleeper function if burst limit reached
 const countCalls = () => {
     if(callCounter == 95) {
         console.log('Burst limit reached. Pausing execution for 10 seconds');
@@ -31,6 +33,7 @@ const countCalls = () => {
     }
 }
 
+//
 const getContactEmailsInList = async (uniqueListId) => {
     countCalls();
     getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email`;
@@ -38,14 +41,14 @@ const getContactEmailsInList = async (uniqueListId) => {
     let contactArray = res.data.contacts;
     let emailArray = [];
     let placeholderArray
-    if (contactArray) emailArray = contactArray.map(contact => contact.properties.email.value); 
+    if (contactArray) emailArray = contactArray.map(contact => contact.properties.email ? contact.properties.email.value : "noEmail"); 
     vidOffset = res.data['vid-offset']; 
     while(res.data['has-more']) {
         countCalls();
         getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email&vidOffset=${vidOffset}`;
         res = await axios.get(getContactsInListEndpoint);
         contactArray = res.data.contacts;
-        if (contactArray) placeholderArray = contactArray.map( contact => contact.properties.email.value);
+        if (contactArray) placeholderArray = contactArray.map( contact => contact.properties.email ? contact.properties.email.value : "noEmail");
         emailArray = [...emailArray, ...placeholderArray];
         vidOffset = res.data['vid-offset'];
     }
@@ -106,6 +109,7 @@ const createListFiles = async (listIdArray) => {
         uniqueListId = listIdArray[i];
         const emailArray = await getContactEmailsInList(uniqueListId);
         fs.writeFileSync(`listsWithContacts/list_${uniqueListId}.txt`, emailArray.toString());
+        console.log(i + ': Contact-File created successfully');
     }
 }
 
