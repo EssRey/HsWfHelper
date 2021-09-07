@@ -12,9 +12,12 @@ import time
 # Configuration
 #-------------
 
+action_placeholder_property = "message"
+
 config = dotenv_values(".env")
 hapikey_origin = config["HAPIKEY_ORIGIN"]
 hapikey_target = config["HAPIKEY_TARGET"]
+
 with open("action_schemata.json", "r") as read_file:
     action_schemata = json.load(read_file)
 with open("reference_properties.json", "r") as read_file:
@@ -38,7 +41,7 @@ def url_create_wf(hapikey):
 #-------------
 def create_placeholder(placeholder_content):
     placeholder_node = {"type": "SET_CONTACT_PROPERTY",
-             "propertyName": "message",
+             "propertyName": action_placeholder_property,
              "newValue": json.dumps(placeholder_content)
              }
     #if "anchorSetting" in placeholder_content:

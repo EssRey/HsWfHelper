@@ -13,23 +13,12 @@ placeholder_deal_property="dealname"
 #logger = {"withinTimeMode": []}
 with open("segment_schemata.json", "r") as read_file:
     segment_schemata = json.load(read_file)
-with open("id_mappings.json", "r") as read_file:
-    id_mappings = json.load(read_file)
-
-with open("reference_properties.json", "r") as read_file:
-    reference_properties = json.load(read_file)
-
-
-owner_properties_dict = {
-    "deal": [
-        "hubspot_owner_id"
-    ],
-    "contact": [
-        "hubspot_owner_id"
-    ],
-    "lineitem": [
-    ]
-}
+#with open("id_mappings.json", "r") as read_file:
+#    id_mappings = json.load(read_file)
+#with open("reference_properties.json", "r") as read_file:
+#    reference_properties = json.load(read_file)
+with open("reference_owner_properties.json", "r") as read_file:
+    owner_properties_dict = json.load(read_file)
 
 
 all_segments_ever = {}
@@ -41,7 +30,7 @@ def print_s():
 # Functions
 ###
 
-def segment_processor(segment, owner_properties=owner_properties_dict):
+def segment_processor(segment):
     # validation of filterFamily type and top-level keys
     schema = {}
     try:
@@ -200,7 +189,7 @@ def segment_placeholder(segment):
             }
     return placeholder
 
-def parse_segments(segments, owner_properties=["hubspot_owner_id"], processor=segment_processor):
+def parse_segments(segments, processor=segment_processor):
     assert isinstance(segments, list)
     processed_segments = []
     for sufficient_group in segments:
@@ -208,12 +197,12 @@ def parse_segments(segments, owner_properties=["hubspot_owner_id"], processor=se
         processed_sufficient_group = []
         for necessary_condition in sufficient_group:
             assert isinstance(necessary_condition, dict)
-            processed_necessary_condition = processor(necessary_condition, owner_properties)
+            processed_necessary_condition = processor(necessary_condition)
             processed_sufficient_group.append(processed_necessary_condition)
         processed_segments.append(processed_sufficient_group)
     return processed_segments
 
-def parse_reEnrollment(triggers, owner_properties=["hubspot_owner_id"]):
+def parse_reEnrollment(triggers):
     if not isinstance(triggers, list):
         print("cannot parse reEnrollmentTriggerSets, returning empty segments")
         return []
