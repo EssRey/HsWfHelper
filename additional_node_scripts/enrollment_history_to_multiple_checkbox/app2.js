@@ -1,13 +1,18 @@
 require('dotenv').config();
-const fs = require('fs');
 const axios = require('axios').default;
 const targetHapiKey = process.env.HAPIKEY_TARGET;
 const wfsData = require('./results/contactsByList');
 
-// Todo: Error handling, retries on rate limits (batch limited to 1000 contacts)
+const timer = () => new Promise(res => setTimeout(res, 10000));
+
+const delayMessage = async () => { 
+    console.log('API Burst Limit reached... Pausing for 10 seconds')
+    await timer();
+    console.log('Resuming script');
+}
 
 // consolidated concat func and create property function for one loop through contacts_by_list
-const createPropConcatWFs = () => {
+const createPropConcatWFs = async () => {
 
     const array = wfsData.contacts_by_list;
     const propertyOptions = [];
@@ -24,9 +29,17 @@ const createPropConcatWFs = () => {
 
                 if (wfInstance[wfId].length) {
 
-                    let email = contact['identity-profiles'][0].identities[0].value;
+                    // Find 'EMAIL' identity
+                    let emailIndex = contact['identity-profiles'][0].identities.findIndex(identity => identity.type === 'EMAIL');
 
-                    newObj.hasOwnProperty(email) ? newObj[email] = newObj[email] += `;${wfId}` : newObj[email] = wfId;
+                    // If contact does not have an email, skip
+                    if (emailIndex >= 0 ) {
+
+                        let email = contact['identity-profiles'][0].identities[emailIndex].value;
+
+                        newObj.hasOwnProperty(email) ? newObj[email] = newObj[email] += `;${wfId}` : newObj[email] = wfId;
+                    }
+
                 }
                 
             });
@@ -35,7 +48,7 @@ const createPropConcatWFs = () => {
         
     }, {});
 
-    // obj to create multicheck property with wfids as options
+    // obj for create property POST request to create multicheck property with wfids as options
     const propertyObj = {
         "name": "workflow_ids",
         "label": "Workflow IDs",
@@ -48,18 +61,67 @@ const createPropConcatWFs = () => {
         "formField": false
     };
 
-    // create custom property in target portal
-    // Todo: Check if property exists? 
+    // Todo: If property exists, update multicheck with new values?
 
-    axios.post(`https://api.hubapi.com/properties/v1/contacts/properties?hapikey=${targetHapiKey}`, propertyObj)
-        .then(res => {
-            console.log(res);
-        })
-        .catch(e => {
-            console.log(e);
-        });
+    // create custom property in target portal
+
+    try {
+        let response = await axios.post(`https://api.hubapi.com/properties/v1/contacts/properties?hapikey=${targetHapiKey}`, propertyObj);
+
+        if (response.statusText === 'OK') console.log('Workflow IDs property successfully created in portal');
+
+    } catch(err) {
+
+        if (err.response.status === 409) console.log('Property already exists in target portal');
+    }
 
     return wfIdsByEmail;
+}
+
+const formatRequests = (wfIdsByEmail) => {
+
+    let resultsArray = [];
+
+    for (key in wfIdsByEmail) {
+        resultsArray.push({[key]: wfIdsByEmail[key]});
+    }
+
+    let i = 0;
+    //batchSize = contacts per API call (recommended max 100 per V1 endpoint docs)
+    let batchSize = 100;
+    let batchedContacts = [];
+
+    while (i < resultsArray.length) {
+
+        if (i % batchSize === 0) batchedContacts.push([]);
+  
+        batchedContacts[batchedContacts.length - 1].push(resultsArray[i++])
+    }
+
+    const requests = batchedContacts.map(array => {
+
+        const spreadContactObjects = Object.assign({}, ...array);
+
+        let targetPortalContactsToUpdate = [];
+
+        for (key in spreadContactObjects) {
+            targetPortalContactsToUpdate.push({
+                "email": key,
+                "properties": [
+                    {
+                        "property": "workflow_ids",
+                        "value": spreadContactObjects[key]
+                    }
+                ]
+            });
+        }
+
+        return targetPortalContactsToUpdate;
+
+    });
+
+    return requests;
+
 }
 
 const updatePropertyByEmail = async () => {
@@ -71,27 +133,29 @@ const updatePropertyByEmail = async () => {
         throw new Error('No contacts to update');
     }
 
-    let targetPortalContactsToUpdate = [];
+    const requests = await formatRequests(wfIdsByEmail);
 
-    for (key in wfIdsByEmail) {
-        targetPortalContactsToUpdate.push({
-            "email": key,
-            "properties": [
-                {
-                    "property": "workflow_ids",
-                    "value": wfIdsByEmail[key]
-                }
-            ]
-        });
-    }    
+    let limit = 100;
 
-    axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, targetPortalContactsToUpdate)
-        .then(res => {
-            console.log(res);
-        })
-        .catch(e => {
-            console.log(e);
-        });
+    // Make API call for each batch of contacts (obj in array)
+
+    for (let i = 0; i < requests.length; i++) {
+
+        let contactBatch = requests[i];
+
+        console.log(`Writing contacts to target portal (batch ${(i + 1)} of ${requests.length})`);
+
+        let response = await axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, contactBatch);
+
+        limit = response.headers['x-hubspot-ratelimit-remaining'];
+
+        // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
+        if (limit < 10) {
+            await delayMessage();
+        }
+    }
+
+    console.log('Contacts written to/updated in target portal. Script execution complete');
 }
 
 updatePropertyByEmail();
