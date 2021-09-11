@@ -100,9 +100,9 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
         //creating JSON-Output and saving it to /results directory
         let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties, "line_item": lineItemProperties};
         finalJson = JSON.stringify(finalJson, null, 2);
-        fs.writeFileSync('../../results/object_properties.json', finalJson);
+        fs.writeFileSync('../../reference_properties.json', finalJson);
         
         let finalOwnerJson = {"company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties, "line_item": lineItemOwnerProperties};
         finalOwnerJson = JSON.stringify(finalOwnerJson, null, 2);
-        fs.writeFileSync('../../results/object_owner_properties.json', finalOwnerJson);
+        fs.writeFileSync('../../reference_owner_properties.json', finalOwnerJson);
     });
