@@ -78,5 +78,11 @@ for filename in files:
                 assert len(row) == 2
                 base_dict[keyword]["map"][row[0]] = row[1]
 
+try:
+    with open("id_mappings/listIdMapping.json", "r") as read_file:
+        base_dict["listId"]["map"].update(json.load(read_file))
+except FileNotFoundError:
+    print("No list ID mappings found.")
+
 with open("id_mappings.json", "w") as data_file:
     json.dump(base_dict, data_file, indent=2)

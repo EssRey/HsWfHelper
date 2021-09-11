@@ -71,7 +71,7 @@ def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
     body = process_list(list_id, hapikey=hapikey_origin)
     r = requests.post(url_create_list(hapikey_target), json = body)
     if not r:
-        with open("playground/logs/list_v8_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+        with open("playground/logs/list_REAL_v1_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
             json.dump(r.json(), data_file, indent=2)
     else:
         print(r)
@@ -94,9 +94,11 @@ def process_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_targ
 
 
 if __name__ == "__main__":
-    #copy_all_lists()
-    from segment_parser import print_s
-    process_all_lists()
-    print_s()
+    copy_all_lists()
+    #from segment_parser import print_s
+    #process_all_lists()
+    #print_s()
     #write_list_id_map()
+    with open("playground/logs/list_REAL_MAP.json", "w") as data_file:
+            json.dump(list_id_map.json(), data_file, indent=2)
 

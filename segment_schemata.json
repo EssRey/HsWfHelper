@@ -33,7 +33,11 @@
   },
   "Engagement": {
     "propertyObjectType": "pass",
-    "engagementsFilter": "DICT_engagementsFilter"
+    "engagementsFilter": "DICT_engagementsFilter",
+    "longValue": "pass",
+    "strValue": "pass",
+    "property": "PROP_engagement_property",
+    "type": "pass"
   },
   "CTA": {
     "value": "ID_ctaId"
@@ -42,9 +46,9 @@
     "value": "pass"
   },
   "Workflow": {
-    "list": "?(can drop?)",
+    "list": "DO_NOT_PROCESS",
     "workflowId": "ID_workflowId",
-    "dynamicList": "?"
+    "dynamicList": "DO_NOT_PROCESS"
   },
   "Subscriptions": {
     "subscriptionsFilter": "DICT_subscriptionsFilter"

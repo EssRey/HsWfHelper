@@ -7,28 +7,36 @@ from functools import partial
 ###
 
 # contact string property
-placeholder_property="message"
+placeholder_property = "message"
+
 # deal string property
-placeholder_deal_property="dealname"
-#logger = {"withinTimeMode": []}
+placeholder_deal_property = "dealname"
+
+# engagement string property
+placeholder_engagement_property = "hs_note_body"
+
 with open("segment_schemata.json", "r") as read_file:
     segment_schemata = json.load(read_file)
-#with open("id_mappings.json", "r") as read_file:
-#    id_mappings = json.load(read_file)
-#with open("reference_properties.json", "r") as read_file:
-#    reference_properties = json.load(read_file)
+
 with open("reference_owner_properties.json", "r") as read_file:
     owner_properties_dict = json.load(read_file)
-
-
-all_segments_ever = {}
-def print_s():
-    print(all_segments_ever)
-
 
 ###
 # Functions
 ###
+
+def owner_id_check(value, prop, object_type):
+    if (object_type == "DEAL" and prop in owner_properties_dict["deal"] or
+            object_type == "LINE_ITEM" and prop in owner_properties_dict["lineitem"] or
+            object_type == "COMPANY" and prop in owner_properties_dict["company"] or
+            object_type == "CONTACT" and prop in owner_properties_dict["contact"] or
+            object_type == "ENGAGEMENT" and prop in owner_properties_dict["engagement"]):
+        substitution_result = get_target_id("ownerId", value)
+        if substitution_result is None:
+            return {"log_type":"SUBSTITUTION_ERROR", "log":"cannot_map_ownerId "+str(value)}
+        else:
+            value = substitution_result
+    return value
 
 def segment_processor(segment):
     # validation of filterFamily type and top-level keys
@@ -42,13 +50,6 @@ def segment_processor(segment):
     except AssertionError:
         print("this segment contains unknown keys: " + json.dumps(segment))
 
-    #temp
-    #if segment["filterFamily"] not in all_segments_ever:
-    #    all_segments_ever[segment["filterFamily"]] = [segment]
-    #else:
-    #    all_segments_ever[segment["filterFamily"]].append(segment)
-    # /temp
-
     def deal_property_placeholder(segment):
         placeholder_sub_segment = {
             "operator": "EQ",
@@ -60,6 +61,66 @@ def segment_processor(segment):
             "value": json.dumps(segment)
         }
         return placeholder_sub_segment
+
+    def engagement_property_placeholder(segment):
+        placeholder_sub_segment = {
+            "operator": "EQ",
+            "filterFamily": "Engagement",
+            "propertyObjectType": "ENGAGEMENT",
+            "type": "string",
+            "property": placeholder_engagement_property,
+            "strValue": json.dumps(segment)
+        }
+        return placeholder_sub_segment
+
+    def process_pass(value):
+        return value, []
+
+    def process_get_id(id_type, origin_id):
+        mapped_value = get_target_id(id_type, origin_id)
+        if mapped_value is None:
+            return None, "PLACEHOLDER_ABORT"
+        else:
+            return mapped_value, []
+
+    def process_emailEventFilter(value_dict):
+        return value_dict
+
+    def process_subscriptionFilter(value_dict):
+        return value_dict
+
+    def process_engagementsFilter(value_dict):
+        assert isinstance(value_dict, dict)
+        assert len(value_dict)==1
+        processed_filters = []
+        event_log_engagementsFilter = []
+        for sub_segment in value_dict["filters"]:
+            assert isinstance(sub_segment, dict)
+            #processed_sub_segment = sub_segment.copy()
+            for sub_key in sub_segment:
+                assert schema[sub_key] != "DO_NOT_PROCESS"
+            processed_sub_segment, event_log_filter = segment_processor(sub_segment)
+            processed_filters.append(processed_sub_segment)
+            if len(event_log_filter) > 0:
+                event_log_engagementsFilter.append(event_log_filter)
+        return {"filters": processed_filters}, event_log_engagementsFilter
+
+    def process_dealsFilter(value_dict):
+        assert isinstance(value_dict, dict)
+        assert len(value_dict)==1
+        processed_filterLines = []
+        event_log_dealsFilter = []
+        for sub_segment in value_dict["filterLines"]:
+            assert len(sub_segment) == 2
+            assert isinstance(sub_segment["filter"], dict)
+            processed_sub_segment = sub_segment.copy()
+            for sub_key in sub_segment["filter"]:
+                assert schema[sub_key] != "DO_NOT_PROCESS"
+            processed_sub_segment["filter"], event_log_filter = segment_processor(sub_segment["filter"])
+            processed_filterLines.append(processed_sub_segment)
+            if len(event_log_filter) > 0:
+                event_log_dealsFilter.append(event_log_filter)
+        return {"filterLines": processed_filterLines}, event_log_dealsFilter
 
     operation_handlers = {
         "pass": process_pass,
@@ -75,65 +136,8 @@ def segment_processor(segment):
         "PROP_contact_property": process_pass,
         "PROP_company_property": process_pass,
         "PROP_deal_or_lineitem_property": process_pass,
-        "?(can drop?)": process_pass,
-        "?": process_pass
+        "PROP_engagement_property": process_pass
     }
-
-    def process_pass(value):
-        return value, []
-
-    def process_get_id(id_type, origin_id):
-        mapped_value = get_target_id(id_type, origin_id)
-        if mapped_value is None:
-            return None, "PLACEHOLDER_ABORT"
-        else:
-            return mapped_value, []
-
-
-
-    def process_emailEventFilter(value_dict):
-        return value_dict
-
-    def process_subscriptionFilter(value_dict):
-        return value_dict
-
-    def process_engagementsFilter(value_dict):
-        return value_dict
-
-    def process_dealsFilter(value_dict):
-        return process_subsegment_filters("engagementsFilter", value_dict)
-
-    def process_subsegment_filters(key, value_dict):
-        assert isinstance(value_dict, dict)
-        assert len(value_dict)==1
-        processed_filterLines = []
-
-        event_log_dealsFilter = []
-
-        for sub_segment in value_dict["filterLines"]:
-            assert len(sub_segment) == 2
-            assert isinstance(sub_segment["filter"], dict)
-            processed_sub_segment = sub_segment.copy()
-            for sub_key in sub_segment["filter"]:
-                assert schema[sub_key] != "DO_NOT_PROCESS"
-            processed_sub_segment["filter"], event_log_filter = segment_processor(sub_segment["filter"])
-            processed_filterLines.append(processed_sub_segment)
-            if len(event_log_filter) > 0:
-                event_log_dealsFilter.append(event_log_filter)
-        return {"filterLines": processed_filterLines}, event_log_dealsFilter
-
-    # this function uses the entire segment (not just its parameters)
-    def owner_id_check(value, prop, object_type):
-        if (object_type == "DEAL" and prop in owner_properties_dict["deal"] or
-                object_type == "LINE_ITEM" and prop in owner_properties_dict["lineitem"] or
-                object_type == "COMPANY" and prop in owner_properties_dict["company"] or
-                object_type == "CONTACT" and prop in owner_properties_dict["contact"]):
-            substitution_result = get_target_id("ownerId", value)
-            if substitution_result is None:
-                return {"log_type":"SUBSTITUTION_ERROR", "log":"cannot_map_ownerId "+str(value)}
-            else:
-                value = substitution_result
-        return value
 
     processed_segment = {}
     event_log_segment = []
@@ -142,7 +146,15 @@ def segment_processor(segment):
         if schema[key] == "DO_NOT_PROCESS":
             return segment_placeholder(segment), [{"log_type":"placeholder_segment_"+segment["filterFamily"], "log":json.dumps(segment)}]
         operation_handler = operation_handlers[schema[key]]
-        processed_segment[key], event_log_key = operation_handler(segment[key])
+        try:
+            processed_segment[key], event_log_key = operation_handler(segment[key])
+        except ValueError:
+            print("not_good")
+            print(operation_handler)
+            print(key)
+            print(segment[key])
+            print(operation_handler(segment[key]))
+            assert False
         if event_log_key == "PLACEHOLDER_ABORT":
             event_log_segment.append({"log_type":"abort_substitution_" + key + "_in_" + segment["filterFamily"], "log":json.dumps(segment)})
             return segment_placeholder(segment), event_log_segment
@@ -150,30 +162,45 @@ def segment_processor(segment):
             event_log_segment.append({"log_type": "key_"+key, "log":event_log_key})
 
     # substitute owner ID if owner property
-    if "value" in processed_segment:
+    if "value" in processed_segment or "strValue" in processed_segment:
         object_type = None
         placeholder = segment_placeholder(segment)
         if processed_segment["filterFamily"]=="DealProperty":
-            assert "propertyObjectType" in processed_segment
+            #assert "propertyObjectType" in processed_segment
             object_type = processed_segment["propertyObjectType"]
             placeholder = deal_property_placeholder(segment)
+        elif processed_segment["filterFamily"]=="Engagement":
+            #assert "propertyObjectType" in processed_segment
+            object_type = processed_segment["propertyObjectType"]
+            placeholder = engagement_property_placeholder(segment)
         elif processed_segment["filterFamily"]=="CompanyPropertyValue":
             object_type = "COMPANY"
         elif processed_segment["filterFamily"]=="PropertyValue":
             object_type = "CONTACT"
         if object_type:
-            confirmed_value = owner_id_check(processed_segment["value"],
-                                            processed_segment["property"],
-                                            object_type)
-            if isinstance(confirmed_value, dict):
-                assert confirmed_value["type"]=="SUBSTITUTION_ERROR"
-                event_log_segment.insert(0, {"log_type":"placeholder_segment_OWNERID_"+processed_segment["filterFamily"],
-                                            "log":confirmed_value["log"] + " (" + json.dumps(segment) + ")"})
-                return placeholder, event_log_segment
+            if "value" in processed_segment:
+                owner_array = processed_segment["value"].split(";")
             else:
-                processed_segment["value"] = confirmed_value
-    return processed_segment, event_log_segment
+                owner_array = processed_segment["strValue"].split(";")
+            processed_owner_array = []
+            for owner in owner_array:
 
+
+                confirmed_value = owner_id_check(owner,
+                                                processed_segment["property"],
+                                                object_type)
+                if isinstance(confirmed_value, dict):
+                    assert confirmed_value["log_type"]=="SUBSTITUTION_ERROR"
+                    event_log_segment.insert(0, {"log_type":"placeholder_segment_OWNERID_"+processed_segment["filterFamily"],
+                                                "log":confirmed_value["log"] + " (" + json.dumps(segment) + ")"})
+                    return placeholder, event_log_segment
+                else:
+                    processed_owner_array.append(confirmed_value)
+            if "value" in processed_segment:
+                processed_segment["value"] = ";".join(processed_owner_array)
+            else:
+                processed_segment["strValue"] = ";".join(processed_owner_array)
+    return processed_segment, event_log_segment
 
 ###
 # External interface
@@ -210,3 +237,51 @@ def parse_reEnrollment(triggers):
     # process here
     return processed_triggers
 
+
+
+###
+# Temp testing
+###
+
+test_engagement = {
+    "filterFamily": "Engagement",
+    "withinTimeMode": "PAST",
+    "engagementsFilter": {
+        "filters": [
+            {
+                "property": "hubspot_owner_id",
+                "operator": "SET_ANY",
+                "type": "enumeration",
+                "strValue": "30612412;39019619",
+                "propertyObjectType": "ENGAGEMENT",
+                "filterFamily": "Engagement"
+            },
+            {
+                "property": "hubspot_owner_id",
+                "operator": "IS_EMPTY",
+                "type": "enumeration",
+                "propertyObjectType": "ENGAGEMENT",
+                "filterFamily": "Engagement"
+            },
+            {
+                "property": "hs_created_by",
+                "operator": "SET_ALL",
+                "type": "enumeration",
+                "strValue": "4678986",
+                "propertyObjectType": "ENGAGEMENT",
+                "filterFamily": "Engagement"
+            },
+            {
+                "property": "hs_task_completion_date",
+                "operator": "IS_NOT_EMPTY",
+                "type": "datetime",
+                "longValue": 1631387869856,
+                "propertyObjectType": "ENGAGEMENT",
+                "filterFamily": "Engagement"
+            }
+        ]
+    },
+    "propertyObjectType": "ENGAGEMENT"
+}
+
+print(segment_processor(test_engagement))
