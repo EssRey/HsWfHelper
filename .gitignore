@@ -11,10 +11,12 @@ results/*
 additional_node_scripts/migrate_static_lists/staticListsWithContacts/*
 
 # Custom
+sample_migration_3967897/
+id_mappings/*.csv
 not_ready/
-id_mappings/
 misc_docs/
 playground/
 __pycache__/
 ~$tions_catalog.docx
 actions_catalog.docx
+id_mappings.json

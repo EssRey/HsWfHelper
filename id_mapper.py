@@ -29,22 +29,26 @@ def get_emailContentId(obj_id):
 
 def get_userId(obj_id):
     # SMS_NOTIFICATION
-    if obj_id in id_mappings["userId"]["map"]:
-        obj_id = id_mappings["userId"]["map"]["id"]
-    elif id_mappings["userId"]["fallback"]:
-        obj_id = id_mappings["userId"]["fallback"]
+    ## user ID values appear unchanged
     return obj_id
+    #if obj_id in id_mappings["userId"]["map"]:
+    #    obj_id = id_mappings["userId"]["map"]["id"]
+    #elif id_mappings["userId"]["fallback"]:
+    #    obj_id = id_mappings["userId"]["fallback"]
+    #return obj_id
 
 def get_teamId(obj_id):
     # LEAD_ASSIGNMENT
-    if obj_id is None:
-        return obj_id
-    elif obj_id in id_mappings["teamId"]["map"]:
-        obj_id = id_mappings["teamId"]["map"]["id"]
-    elif id_mappings["teamId"]["fallback"]:
-        obj_id = id_mappings["teamId"]["fallback"]
-    # is either None or single-valued
+    ## team ID values appear unchanged after all
     return obj_id
+    #if obj_id is None:
+    #    return obj_id
+    #elif obj_id in id_mappings["teamId"]["map"]:
+    #    obj_id = id_mappings["teamId"]["map"]["id"]
+    #elif id_mappings["teamId"]["fallback"]:
+    #    obj_id = id_mappings["teamId"]["fallback"]
+    # is either None or single-valued
+    #return obj_id
 
 def get_ownerId(obj_id):
     # DEAL, TASK
