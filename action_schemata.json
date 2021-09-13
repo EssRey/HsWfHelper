@@ -211,7 +211,7 @@
         "filtersListId": "DROP",
         "actionId": "DROP",
         "stepId": "DROP",
-        "filters": "SUBSTITUTE",
+        "filters": "PARSE_SEGMENTS",
         "acceptActions": "PASS",
         "rejectActions": "PASS"
     },

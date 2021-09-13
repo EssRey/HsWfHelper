@@ -27,7 +27,7 @@ with open("reference_owner_properties.json", "r") as read_file:
 
 def owner_id_check(value, prop, object_type):
     if (object_type == "DEAL" and prop in owner_properties_dict["deal"] or
-            object_type == "LINE_ITEM" and prop in owner_properties_dict["lineitem"] or
+            object_type == "LINE_ITEM" and prop in owner_properties_dict["line_item"] or
             object_type == "COMPANY" and prop in owner_properties_dict["company"] or
             object_type == "CONTACT" and prop in owner_properties_dict["contact"] or
             object_type == "ENGAGEMENT" and prop in owner_properties_dict["engagement"]):
@@ -76,7 +76,7 @@ def segment_processor(segment):
     def process_pass(value):
         return value, []
 
-    def process_get_id(id_type, origin_id):
+    def process_get_id(origin_id, id_type):
         mapped_value = get_target_id(id_type, origin_id)
         if mapped_value is None:
             return None, "PLACEHOLDER_ABORT"
@@ -84,10 +84,24 @@ def segment_processor(segment):
             return mapped_value, []
 
     def process_emailEventFilter(value_dict):
-        return value_dict
+        # not implemented while emailCampaignID migration issue not clarified
+        # once it is, will have to call https://legacydocs.hubspot.com/docs/methods/cms_email/get-the-details-for-a-marketing-email
+        # and then look at allEmailCampaignIds or primary campaign id or campaign id group (not sure which one when)
+        return None, "PLACEHOLDER_ABORT"
 
-    def process_subscriptionFilter(value_dict):
-        return value_dict
+    def process_subscriptionsFilter(value_dict):
+        assert isinstance(value_dict, dict)
+        assert len(value_dict)==2
+        processed_dict = value_dict.copy()
+        subscription_array = []
+        for subscription in value_dict["subscriptionIds"]:
+            mapped_subscription = get_target_id("subscriptionId", subscription)
+            if mapped_subscription is None:
+                return None, "PLACEHOLDER_ABORT"
+            else:
+                subscription_array.append(mapped_subscription)
+        processed_dict["subscriptionIds"] = subscription_array
+        return processed_dict, []
 
     def process_engagementsFilter(value_dict):
         assert isinstance(value_dict, dict)
@@ -132,7 +146,7 @@ def segment_processor(segment):
         "DICT_dealsFilter": process_dealsFilter,
         "DICT_engagementsFilter": process_engagementsFilter,
         "DICT_emailEventFilter": process_emailEventFilter,
-        "DICT_subscriptionsFilter": process_subscriptionFilter,
+        "DICT_subscriptionsFilter": process_subscriptionsFilter,
         "PROP_contact_property": process_pass,
         "PROP_company_property": process_pass,
         "PROP_deal_or_lineitem_property": process_pass,
@@ -146,15 +160,7 @@ def segment_processor(segment):
         if schema[key] == "DO_NOT_PROCESS":
             return segment_placeholder(segment), [{"log_type":"placeholder_segment_"+segment["filterFamily"], "log":json.dumps(segment)}]
         operation_handler = operation_handlers[schema[key]]
-        try:
-            processed_segment[key], event_log_key = operation_handler(segment[key])
-        except ValueError:
-            print("not_good")
-            print(operation_handler)
-            print(key)
-            print(segment[key])
-            print(operation_handler(segment[key]))
-            assert False
+        processed_segment[key], event_log_key = operation_handler(segment[key])
         if event_log_key == "PLACEHOLDER_ABORT":
             event_log_segment.append({"log_type":"abort_substitution_" + key + "_in_" + segment["filterFamily"], "log":json.dumps(segment)})
             return segment_placeholder(segment), event_log_segment
@@ -179,9 +185,9 @@ def segment_processor(segment):
             object_type = "CONTACT"
         if object_type:
             if "value" in processed_segment:
-                owner_array = processed_segment["value"].split(";")
+                owner_array = str(processed_segment["value"]).split(";")
             else:
-                owner_array = processed_segment["strValue"].split(";")
+                owner_array = str(processed_segment["strValue"]).split(";")
             processed_owner_array = []
             for owner in owner_array:
 
@@ -218,15 +224,20 @@ def segment_placeholder(segment):
 
 def parse_segments(segments, processor=segment_processor):
     assert isinstance(segments, list)
+    segment_log = []
     processed_segments = []
     for sufficient_group in segments:
         assert isinstance(sufficient_group, list)
         processed_sufficient_group = []
         for necessary_condition in sufficient_group:
             assert isinstance(necessary_condition, dict)
-            processed_necessary_condition = processor(necessary_condition)
+            processed_necessary_condition, necessary_condition_log = processor(necessary_condition)
             processed_sufficient_group.append(processed_necessary_condition)
+            if necessary_condition_log != []:
+                segment_log.append(necessary_condition_log)
         processed_segments.append(processed_sufficient_group)
+    if segment_log != []:
+        print(segment_log)
     return processed_segments
 
 def parse_reEnrollment(triggers):
@@ -284,4 +295,54 @@ test_engagement = {
     "propertyObjectType": "ENGAGEMENT"
 }
 
-print(segment_processor(test_engagement))
+#print(segment_processor(test_engagement))
+
+test_filters = [
+    [
+        {
+            "withinTimeMode": "PAST",
+            "page": "",
+            "form": "4886fea6-88bf-4025-b338-c65341e5b858",
+            "operator": "HAS_NOT_FILLED_OUT_FORM",
+            "filterFamily": "FormSubmission"
+        },
+        {
+            "withinTimeMode": "PAST",
+            "page": "",
+            "form": "a9bb5cc0-81a8-4fc9-8d50-991b5024b260",
+            "operator": "HAS_FILLED_OUT_FORM",
+            "filterFamily": "FormSubmission"
+        }
+    ],
+    [
+        {
+            "withinTimeMode": "PAST",
+            "operator": "EQ",
+            "filterFamily": "PropertyValue",
+            "type": "string",
+            "property": "test_string_two",
+            "value": "ANGEMELDET"
+        },
+        {
+            "withinTimeMode": "PAST",
+            "page": "",
+            "form": "4886fea6-88bf-4025-b338-c65341e5b858",
+            "operator": "HAS_NOT_FILLED_OUT_FORM",
+            "filterFamily": "FormSubmission"
+        }
+    ]
+]
+
+test_filters_two = [
+    [
+        {
+            "withinTimeMode": "PAST",
+            "page": "",
+            "form": "4886fea6-88bf-4025-b338-c65341e5b858",
+            "operator": "HAS_NOT_FILLED_OUT_FORM",
+            "filterFamily": "FormSubmission"
+        }
+    ]
+]
+
+#parse_segments(test_filters_two)

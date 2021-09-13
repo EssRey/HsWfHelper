@@ -5,7 +5,7 @@ from segment_parser import parse_segments
 # Configuration
 ###
 
-name_prefix = "migrated_v7_"
+name_prefix = "migrated_v11_"
 all_enabled = False
 staticDateDummy = {"staticDateAnchor": "01/31/2022"}
 
@@ -45,13 +45,11 @@ def get_reEnrollmentTriggerSets(value_origin):
     return value_origin
 
 def get_eventAnchor(value_origin):
-    print(value_origin)
+    print("Changed date of date-centered workflow from "+str(value_origin)+" to a placeholder date("+str(staticDateDummy)+")")
     if "staticDateAnchor" in value_origin:
         return staticDateDummy
     else:
         return value_origin
-
-
 
 key_to_getter = {
     "unenrollmentSetting": get_unenrollmentSetting,

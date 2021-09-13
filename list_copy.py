@@ -12,7 +12,7 @@ from segment_parser import parse_segments, segment_placeholder
 config = dotenv_values(".env")
 hapikey_origin = config["HAPIKEY_ORIGIN"]
 hapikey_target = config["HAPIKEY_TARGET"]
-list_name_prefix = "[migrate_v4] "
+list_name_prefix = "[mig_real_v2] "
 list_id_map = {}
 
 #-------------
@@ -71,34 +71,25 @@ def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
     body = process_list(list_id, hapikey=hapikey_origin)
     r = requests.post(url_create_list(hapikey_target), json = body)
     if not r:
-        with open("playground/logs/list_REAL_v1_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+        with open("playground/logs/list_REAL_v2_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
             json.dump(r.json(), data_file, indent=2)
     else:
-        print(r)
+        print("List " + str(list_id) + " copied successfully (new ID: " + str(r.json()["listId"]) + ").")
         list_id_map[list_id] = str(r.json()["listId"])
-    return r
 
 def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target):
     all_lists = all_lists_raw(hapikey=hapikey_origin)
     for mylist in all_lists:
-        list_id = mylist["listId"]
-        r = copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target)
-
-# for debug purposes
-
-def process_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target):
-    all_lists = all_lists_raw(hapikey=hapikey_origin)
-    for mylist in all_lists:
-        list_id = mylist["listId"]
-        r = process_list(list_id, hapikey=hapikey_origin)
-
+        if "deleted" in mylist and mylist["deleted"]==True:
+            pass
+        else:
+            list_id = mylist["listId"]
+            copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target)
 
 if __name__ == "__main__":
     copy_all_lists()
     #from segment_parser import print_s
-    #process_all_lists()
-    #print_s()
-    #write_list_id_map()
+    #copy_list(748)
     with open("playground/logs/list_REAL_MAP.json", "w") as data_file:
-            json.dump(list_id_map.json(), data_file, indent=2)
+            json.dump(list_id_map, data_file, indent=2)
 

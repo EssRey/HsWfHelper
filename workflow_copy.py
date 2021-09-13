@@ -6,6 +6,7 @@ from dotenv import dotenv_values
 from id_mapper import get_target_id
 from wf_key_mapper import get_wf_key_value
 import time
+from segment_parser import parse_segments
 #from segment_parser import get_log
 
 #-------------
@@ -40,6 +41,7 @@ def url_create_wf(hapikey):
 # Placeholder creator function
 #-------------
 def create_placeholder(placeholder_content):
+    print("Placeholder action created for "+str(placeholder_content))
     placeholder_node = {"type": "SET_CONTACT_PROPERTY",
              "propertyName": action_placeholder_property,
              "newValue": json.dumps(placeholder_content)
@@ -66,15 +68,19 @@ def apply_schema(node):
             return [create_placeholder(node)]
         elif schema[attribute]=="PASS":
             node_copy[attribute] = node[attribute]
+        elif schema[attribute]=="PARSE_SEGMENTS":
+            #print(node[attribute])
+            node_copy[attribute] = parse_segments(node[attribute])
         elif schema[attribute]=="SUBSTITUTE":
             if node[attribute] is None:
                 node_copy[attribute] = None
             else:
+                if attribute=="filters":
                 substitution_result = get_target_id(attribute, node[attribute])
-                if substitution_result is None:
-                    return [create_placeholder(node)]
-                else:
-                    node_copy[attribute] = substitution_result
+                #if substitution_result is None:
+                #    return [create_placeholder(node)]
+                #else:
+                node_copy[attribute] = substitution_result
     # special cases
     def ambiguous_prop(prop):
         obj_with_prop = [obj for obj in reference_properties if prop in reference_properties[obj]]
@@ -142,6 +148,25 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
         time.sleep(10)
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     actions = process_actions(workflow["actions"], apply_schema)
+    # short circuit action
+    actions = [
+        {
+            "type": "BRANCH",
+            "filters": [
+                [
+                    {
+                        "operator": "IS_EMPTY",
+                        "filterFamily": "PropertyValue",
+                        "withinTimeMode": "PAST",
+                        "property": "createdate",
+                        "type": "datetime"
+                    }
+                ]
+            ],
+            "rejectActions": [],
+            "acceptActions": actions
+        }
+    ]
     target_workflow = {
         "actions": actions
     }
@@ -151,8 +176,26 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
         else:
             if wf_schema[key]=="SUBSTITUTE":
                 target_workflow[key] = get_wf_key_value(key, workflow[key])
+                # short-circuit enrollment condition
+                if key == "segmentCriteria":
+                    additional_trigger = [
+                        {
+                            "operator": "CONTAINS",
+                            "filterFamily": "PropertyValue",
+                            "withinTimeMode": "PAST",
+                            "property": "message",
+                            "value": str(workflow_id),
+                            "type": "string"
+                        }
+                    ]
+                    target_workflow[key].append(additional_trigger)
+                    #print(target_workflow[key])
+                    #target_workflow[key].append(additional_trigger)
+                    #print(test)
             elif wf_schema[key]=="PASS":
                 target_workflow[key] = workflow[key]
+#    print(workflow.keys())
+#    print(target_workflow)
     return target_workflow
 
 
@@ -178,13 +221,11 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         r = requests.post(url_create_wf(hapikey_target), json = body)
     if not r and not silent:
         #print(r.text)
-        print(workflow_id)
-        #print ("Workflow " + str(workflow_id) + " was not copied.")
-        with open("playground/logs/wf_v7_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+        print("Workflow " + str(workflow_id) + " could not be copied (Error " + str(r.status_code) +", see log subdirectory for full http response).")
+        with open("playground/logs/wf_REAL_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
             json.dump(r.json(), data_file, indent=2)
     elif not silent:
-        pass
-        #print ("Workflow " + str(workflow_id) + " successfully copied.")
+        print ("Workflow " + str(workflow_id) + " successfully copied.")
     return r
 
 def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_", simulate=False):
@@ -217,8 +258,9 @@ def dump_all_workflows(hapikey_origin=hapikey_origin):
     print(wf_key_set)
 
 if __name__ == "__main__":
-    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
+    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
     #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
     #    copy_workflow(w_id, silent=False, simulate=False)
-    dump_all_workflows()
+    #dump_all_workflows()
     #get_log()
+    #copy_workflow(6978233)

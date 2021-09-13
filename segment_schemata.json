@@ -62,7 +62,7 @@
       "compareProperty": "PROP_company_property"
     },
   "Event": {
-    "value": "pass"
+    "value": "DO_NOT_PROCESS"
   },
   "Import": {
     "importId": "DO_NOT_PROCESS"

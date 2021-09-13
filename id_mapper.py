@@ -51,6 +51,7 @@ def get_teamId(obj_id):
     #return obj_id
 
 def get_ownerId(obj_id):
+    obj_id=str(obj_id)
     # DEAL, TASK
     if obj_id in id_mappings["ownerId"]["map"]:
         obj_id = id_mappings["ownerId"]["map"][obj_id]
