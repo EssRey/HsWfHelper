@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../../.env'});
 const fs = require('fs');
 const axios = require('axios').default;
 const originHapiKey = process.env.HAPIKEY_ORIGIN;
