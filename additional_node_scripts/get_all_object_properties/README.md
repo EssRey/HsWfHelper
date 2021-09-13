@@ -6,10 +6,7 @@
 
 1. Install dependencies via **npm install**"**
 
-2. If not existing, create a **results** folder in *Portal_Migration_JSON*
-Final structure: *Portal_Migration_JSON/results*
-
-3. Add HAPIKEY_ORIGIN variable (for US-Portal) and HAPIKEY_TARGET variable (for EU-Portal) in .env file.
+2. Add HAPIKEY_ORIGIN variable (for US-Portal) and HAPIKEY_TARGET variable (for EU-Portal) in .env file (in the project root folder).
 Structure: 
 *HAPIKEY_ORIGIN=xxxxx-xxxx-...*
 
@@ -17,7 +14,7 @@ Structure:
 
 1. Run *node app.js* in terminal.
 
-This will get all properties from the target portal and store them in *Portal_Migration_JSON/results/object_properties.json*
+This will get all properties from the target portal and store them in *Portal_Migration_JSON/reference_properties.json*, and store all owner-type properties as *Portal_Migration_JSON/reference_owner_properties.json*
 
 This file is later used by another script
 
