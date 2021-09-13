@@ -75,7 +75,6 @@ def apply_schema(node):
             if node[attribute] is None:
                 node_copy[attribute] = None
             else:
-                if attribute=="filters":
                 substitution_result = get_target_id(attribute, node[attribute])
                 #if substitution_result is None:
                 #    return [create_placeholder(node)]
