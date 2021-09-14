@@ -4,6 +4,10 @@ const axios = require('axios').default;
 const apiKey = process.env.HAPIKEY_ORIGIN;
 
 //create api-call functions
+const getContactProperties = () => {
+    return axios.get(`https://api.hubapi.com/crm/v3/properties/contacts?hapikey=${apiKey}`);
+ }
+
 const getCompanyProperties = () => {
        return axios.get(`https://api.hubapi.com/crm/v3/properties/companies?hapikey=${apiKey}`);
     }
@@ -24,6 +28,11 @@ const getLineItemProperties = () => {
     return axios.get(`https://api.hubapi.com/crm/v3/properties/line_item?hapikey=${apiKey}`);
 }
 
+const getEngagementProperties = () => {
+    return axios.get(`https://api.hubapi.com/crm/v3/properties/contacts?hapikey=${apiKey}`);
+ }
+
+let contactOwnerProperties = []; 
 let companyProperties = [];
 let companyOwnerProperties = [];
 let dealProperties = [];
@@ -34,13 +43,16 @@ let quoteProperties = [];
 let quoteOwnerProperties = [];
 let lineItemProperties = [];
 let lineItemOwnerProperties = [];
+let engagementOwnerProperties = [];
 
 //Run all api-calls --> Catch errors along the way, so promise.all will still resolve all functions
 Promise.all([getCompanyProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}), 
             getDealProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
             getTicketProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}), 
             getQuoteProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
-            getLineItemProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"})])
+            getLineItemProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
+            getContactProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"}),
+            getEngagementProperties().catch(error => {console.log(error.response.status + " " + error.response.statusText); return "error"})])
     .then((results) => {
         // If api-call successfull, create list of company properties
         if(results[0] !== "error"){
@@ -97,12 +109,30 @@ Promise.all([getCompanyProperties().catch(error => {console.log(error.response.s
             }
         }
 
+        if(results[5] !== "error"){
+            const contRes = results[5].data;
+            for (let i=0; i < contRes.results.length; i++){
+                if (contRes.results[i].referencedObjectType === "OWNER"){
+                    contactOwnerProperties.push(contRes.results[i].name);
+                }
+            }
+        }
+
+        if(results[6] !== "error"){
+            const engaRes = results[5].data;
+            for (let i=0; i < engaRes.results.length; i++){
+                if (engaRes.results[i].referencedObjectType === "OWNER"){
+                    engagementOwnerProperties.push(engaRes.results[i].name);
+                }
+            }
+        }
+
         //creating JSON-Output and saving it to /results directory
         let finalJson = {"company": companyProperties, "deal": dealProperties, "ticket": ticketProperties, "quote": quoteProperties, "line_item": lineItemProperties};
         finalJson = JSON.stringify(finalJson, null, 2);
         fs.writeFileSync('../../reference_properties.json', finalJson);
         
-        let finalOwnerJson = {"company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties, "line_item": lineItemOwnerProperties};
+        let finalOwnerJson = {"contact": contactOwnerProperties, "company": companyOwnerProperties, "deal": dealOwnerProperties, "ticket": ticketOwnerProperties, "quote": quoteOwnerProperties, "line_item": lineItemOwnerProperties, "engagement": engagementOwnerProperties};
         finalOwnerJson = JSON.stringify(finalOwnerJson, null, 2);
         fs.writeFileSync('../../reference_owner_properties.json', finalOwnerJson);
     });
