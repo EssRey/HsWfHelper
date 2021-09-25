@@ -2,17 +2,19 @@
 # Imports
 #-------------
 import requests, json
-from dotenv import dotenv_values
+#from dotenv import dotenv_values
 import time
 from segment_parser import parse_segments, segment_placeholder
+import config
 
 #-------------
 # Configuration
 #-------------
-config = dotenv_values(".env")
-hapikey_origin = config["HAPIKEY_ORIGIN"]
-hapikey_target = config["HAPIKEY_TARGET"]
-list_name_prefix = "[mig_real_v2] "
+
+#config = dotenv_values(".env")
+hapikey_origin = config.hapikey_origin #config["HAPIKEY_ORIGIN"]
+hapikey_target = config.hapikey_target #config["HAPIKEY_TARGET"]
+list_name_prefix = config.list_name_prefix
 list_id_map = {}
 
 #-------------

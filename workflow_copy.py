@@ -2,22 +2,23 @@
 # Imports
 #-------------
 import requests, json
-from dotenv import dotenv_values
+#from dotenv import dotenv_values
 from id_mapper import get_target_id
 from wf_key_mapper import get_wf_key_value
 import time
 from segment_parser import parse_segments
 #from segment_parser import get_log
+import config
 
 #-------------
 # Configuration
 #-------------
 
-action_placeholder_property = "message"
+action_placeholder_property = config.action_placeholder_property
 
-config = dotenv_values(".env")
-hapikey_origin = config["HAPIKEY_ORIGIN"]
-hapikey_target = config["HAPIKEY_TARGET"]
+#config = dotenv_values(".env")
+hapikey_origin = config.hapikey_origin #config["HAPIKEY_ORIGIN"]
+hapikey_target = config.hapikey_target #config["HAPIKEY_TARGET"]
 
 with open("action_schemata.json", "r") as read_file:
     action_schemata = json.load(read_file)

@@ -1,19 +1,20 @@
 import json
 from id_mapper import get_target_id
 from functools import partial
+import config
 
 ###
 # Configuration
 ###
 
 # contact string property
-placeholder_property = "message"
+placeholder_property = config.placeholder_property
 
 # deal string property
-placeholder_deal_property = "dealname"
+placeholder_deal_property = config.placeholder_deal_property
 
 # engagement string property
-placeholder_engagement_property = "hs_note_body"
+placeholder_engagement_property = config.placeholder_engagement_property
 
 with open("segment_schemata.json", "r") as read_file:
     segment_schemata = json.load(read_file)

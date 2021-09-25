@@ -1,13 +1,14 @@
 import json
 from segment_parser import parse_segments
+import config
 
 ###
 # Configuration
 ###
 
-name_prefix = "migrated_v11_"
-all_enabled = False
-staticDateDummy = {"staticDateAnchor": "01/31/2022"}
+name_prefix = config.name_prefix
+all_enabled = config.all_enabled
+staticDateDummy = config.staticDateDummy
 
 ###
 # Getter functions
