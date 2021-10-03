@@ -16,22 +16,19 @@ placeholder_deal_property = config.placeholder_deal_property
 # engagement string property
 placeholder_engagement_property = config.placeholder_engagement_property
 
-with open("segment_schemata.json", "r") as read_file:
-    segment_schemata = json.load(read_file)
-
-with open("reference_owner_properties.json", "r") as read_file:
-    owner_properties_dict = json.load(read_file)
+segment_schemata = config.segment_schemata
+reference_owner_properties = config.reference_owner_properties
 
 ###
 # Functions
 ###
 
 def owner_id_check(value, prop, object_type):
-    if (object_type == "DEAL" and prop in owner_properties_dict["deal"] or
-            object_type == "LINE_ITEM" and prop in owner_properties_dict["line_item"] or
-            object_type == "COMPANY" and prop in owner_properties_dict["company"] or
-            object_type == "CONTACT" and prop in owner_properties_dict["contact"] or
-            object_type == "ENGAGEMENT" and prop in owner_properties_dict["engagement"]):
+    if (object_type == "DEAL" and prop in reference_owner_properties["deal"] or
+            object_type == "LINE_ITEM" and prop in reference_owner_properties["line_item"] or
+            object_type == "COMPANY" and prop in reference_owner_properties["company"] or
+            object_type == "CONTACT" and prop in reference_owner_properties["contact"] or
+            object_type == "ENGAGEMENT" and prop in reference_owner_properties["engagement"]):
         substitution_result = get_target_id("ownerId", value)
         if substitution_result is None:
             return {"log_type":"SUBSTITUTION_ERROR", "log":"cannot_map_ownerId "+str(value)}

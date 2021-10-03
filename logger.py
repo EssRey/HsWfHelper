@@ -8,6 +8,10 @@ full_log = []
 # External logging interface
 #-------------
 
+###
+# a logged event has the form [TAG, LOG], where TAG is a string and LOG is a dict
+###
+
 def set_logging_object(obj_type: str, obj_id: Any) -> None:
     assert obj_type in ["static_list", "active_list", "workflow"]
     object_id = str(obj_id)

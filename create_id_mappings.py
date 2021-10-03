@@ -84,5 +84,5 @@ try:
 except FileNotFoundError:
     print("No list ID mappings found.")
 
-with open("id_mappings.json", "w") as data_file:
+with open("inputs/id_mappings.json", "w") as data_file:
     json.dump(base_dict, data_file, indent=2)

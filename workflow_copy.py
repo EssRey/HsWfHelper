@@ -20,13 +20,9 @@ action_placeholder_property = config.action_placeholder_property
 hapikey_origin = config.hapikey_origin #config["HAPIKEY_ORIGIN"]
 hapikey_target = config.hapikey_target #config["HAPIKEY_TARGET"]
 
-with open("action_schemata.json", "r") as read_file:
-    action_schemata = json.load(read_file)
-with open("reference_properties.json", "r") as read_file:
-    reference_properties = json.load(read_file)
-# note that the ID mappings (currently as stub) is managed in the id_mapper.py module; TO DO streamline config
-with open("wf_schema.json", "r") as read_file:
-    wf_schema = json.load(read_file)
+action_schemata = config.action_schemata
+reference_properties = config.reference_properties
+wf_schema = config.wf_schema
 
 #-------------
 # URL getters

@@ -1,11 +1,11 @@
 import json
+import config
 
 ###
 # Configuration
 ###
 
-with open("id_mappings.json", "r") as read_file:
-    id_mappings = json.load(read_file)
+id_mappings = config.id_mappings
 
 ###
 # Getter functions

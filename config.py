@@ -29,3 +29,24 @@ placeholder_engagement_property = "hs_note_body"
 name_prefix = "migrated_v11_"
 all_enabled = False
 staticDateDummy = {"staticDateAnchor": "01/31/2022"}
+
+###
+# Read all input files
+###
+
+with open("inputs/segment_schemata.json", "r") as read_file:
+    segment_schemata = json.load(read_file)
+with open("inputs/action_schemata.json", "r") as read_file:
+    action_schemata = json.load(read_file)
+with open("inputs/wf_schema.json", "r") as read_file:
+    wf_schema = json.load(read_file)
+
+
+with open("inputs/reference_properties.json", "r") as read_file:
+    reference_properties = json.load(read_file)
+with open("inputs/reference_owner_properties.json", "r") as read_file:
+    reference_owner_properties = json.load(read_file)
+
+
+with open("inputs/id_mappings.json", "r") as read_file:
+    id_mappings = json.load(read_file)
