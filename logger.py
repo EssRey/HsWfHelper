@@ -29,8 +29,10 @@ def get_logging_object() -> Tuple[str, str]:
     return object_type, object_id
 
 def log_event(event_key: str, event_log: dict) -> None:
-    full_log.append({object_type: object_type,
-                    object_id: object_id,
-                    log_type: "event",
-                    log_key: event_key,
-                    log: event_log})
+    #stub
+    full_log.append({"object_type": object_type,
+                    "object_id": object_id,
+                    "segment_context": segment_context,
+                    "log_type": "event",
+                    "log_key": event_key,
+                    "log": event_log})
