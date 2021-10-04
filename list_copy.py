@@ -6,6 +6,7 @@ import requests, json
 import time
 from segment_parser import parse_segments, segment_placeholder
 import config
+import logger
 
 #-------------
 # Configuration
@@ -52,6 +53,8 @@ def write_list_id_map():
         json.dump(output_dict, data_file, indent=2)
 
 def process_list(list_id, hapikey=hapikey_origin):
+    logger.set_logging_object("active_list", list_id)
+    logger.set_context("list")
     origin_list = requests.get(url_list(list_id, hapikey)).json()
     target_list = {}
     target_list["name"] = list_name_prefix + origin_list["name"]

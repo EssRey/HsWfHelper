@@ -1,5 +1,8 @@
+import json
+
 object_type = ""
 object_id = ""
+segment_context = ""
 
 full_log = []
 
@@ -16,11 +19,16 @@ def set_logging_object(obj_type: str, obj_id: Any) -> None:
     assert obj_type in ["static_list", "active_list", "workflow"]
     object_id = str(obj_id)
     object_type = obj_type
+    segment_context = ""
+
+def set_segment_context(context: str) -> None:
+    assert context in ["enrollment", "reenrollment", "branching", "goal"]
+    segment_context = context
 
 def get_logging_object() -> Tuple[str, str]:
     return object_type, object_id
 
-def log_event(event_key: str, event_log: Any) -> None:
+def log_event(event_key: str, event_log: dict) -> None:
     full_log.append({object_type: object_type,
                     object_id: object_id,
                     log_type: "event",

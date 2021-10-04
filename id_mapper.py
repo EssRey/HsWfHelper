@@ -122,6 +122,7 @@ def get_owners(id_list):
     id_list_copy = []
     if isinstance(id_list, list):
         for obj_id in id_list:
+            obj_id = str(obj_id)
             mapped_owner = get_ownerId(obj_id)
             if mapped_owner is None:
                 raise ValueError("Owner " + str(obj_id) + " not mapped.")
@@ -178,4 +179,6 @@ def get_target_id(attribute, value_origin):
         # if there is no mapping it will apply any fallback value provided
         # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
         # (remove mappings and fallback if an ID should not be changed)
+        if isinstance(value_origin, int):
+            value_origin = str(value_origin)
         return attribute_to_getter[attribute](value_origin)

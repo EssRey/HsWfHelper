@@ -2,6 +2,7 @@ import json
 from id_mapper import get_target_id
 from functools import partial
 import config
+import logger
 
 ###
 # Configuration
@@ -243,7 +244,46 @@ def parse_reEnrollment(triggers):
         print("cannot parse reEnrollmentTriggerSets, returning empty segments")
         return []
     processed_triggers = []
-    # process here
+    for trigger in triggers:
+        processed_trigger = []
+        assert isinstance(trigger, list)
+        if len(trigger) == 2:
+            assert trigger[0]["type"] == "CONTACT_PROPERTY_NAME"
+            mapped_value = owner_id_check(trigger[1]["id"], trigger[0]["id"], "CONTACT")
+            if isinstance(mapped_value, dict):
+                print("Error: owner id substitution failed. This error was logged.")
+                logger.log_event("skipped_reenrollment_trigger", {"type":"CONTACT_PROPERTY_NAME", "detail": "substitution failure ownerId"})
+            else:
+                processed_trigger = trigger
+                processed_trigger[1]["id"] = mapped_value
+        else:
+            assert len(trigger) == 1
+            if trigger[0]["type"] == "CONTACT_PROPERTY_NAME":
+                processed_trigger = trigger
+            elif trigger[0]["type"] == "DYNAMIC_LIST":
+                mapped_id = get_target_id("listId", trigger[0]["id"])
+                if mapped_id is None:
+                    logger.log_event("skipped_reenrollment_trigger", {"type":"DYNAMIC_LIST", "detail": "substitution failure listId"})
+                else:
+                    processed_trigger = trigger
+                    processed_trigger[0]["id"] = mapped_id
+            elif trigger[0]["type"] == "FORM":
+                mapped_id = get_target_id("formId", trigger[0]["id"])
+                if mapped_id is None:
+                    logger.log_event("skipped_reenrollment_trigger", {"type":"FORM", "detail": "substitution failure formId"})
+                else:
+                    processed_trigger = trigger
+                    processed_trigger[0]["id"] = mapped_id
+            elif trigger[0]["type"] == "FULL_URL":
+                processed_trigger = trigger
+            elif trigger[0]["type"] == "PARTIAL_URL":
+                processed_trigger = trigger
+            elif trigger[0]["type"] == "EVENT":
+                logger.log_event("skipped_reenrollment_trigger", {"type":"EVENT", "detail": "event id " + str(trigger[0]["id"])})
+            elif trigger[0]["type"] == "INTEGRATIONS_TIMELINE_EVENT":
+                logger.log_event("skipped_reenrollment_trigger", {"type":"INTEGRATIONS_TIMELINE_EVENT", "detail": "integration timeline event id " + str(trigger[0]["id"])})
+        if processed_trigger != []:
+            processed_triggers.append(processed_trigger)
     return processed_triggers
 
 

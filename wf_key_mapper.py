@@ -1,6 +1,7 @@
 import json
-from segment_parser import parse_segments
+from segment_parser import parse_segments, parse_reEnrollment
 import config
+import logger
 
 ###
 # Configuration
@@ -19,10 +20,11 @@ def get_unenrollmentSetting(value_origin):
 
 def get_actions(value_origin):
     # currently never called (actions are parsed separately in workflow_copy.py 2021/8/15)
+    assert False
     return value_origin
 
 def get_goalCriteria(value_origin):
-    # regular filter parser
+    logger.set_segment_context("goal")
     return parse_segments(value_origin)
 
 def get_name(value_origin):
@@ -38,12 +40,12 @@ def get_enabled(value_origin):
         return value_origin
 
 def get_segmentCriteria(value_origin):
-    # regular filter parse
+    logger.set_segment_context("enrollment")
     return parse_segments(value_origin)
 
 def get_reEnrollmentTriggerSets(value_origin):
-    # special filter parse
-    return value_origin
+    logger.set_segment_context("reenrollment")
+    return parse_reEnrollment(value_origin)
 
 def get_eventAnchor(value_origin):
     print("Changed date of date-centered workflow from "+str(value_origin)+" to a placeholder date("+str(staticDateDummy)+")")

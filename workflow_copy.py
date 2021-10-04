@@ -9,6 +9,7 @@ import time
 from segment_parser import parse_segments
 #from segment_parser import get_log
 import config
+import logger
 
 #-------------
 # Configuration
@@ -122,6 +123,7 @@ def process_actions(actions, node_processor):
 # takes and returns a list of actions
 # node_processor must take an action (dict) and return a list of actions
     action_list = []
+    logger.set_segment_context("branching")
     for action in actions:
         if action["type"]=="BRANCH":
             branch_node = action.copy()
@@ -137,6 +139,7 @@ def process_actions(actions, node_processor):
 #-------------
 
 def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False):
+    logger.set_logging_object("workflow", workflow_id)
     try:
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     except:
@@ -246,17 +249,17 @@ def dump_all_workflows(hapikey_origin=hapikey_origin):
         wf_keys=set(workflow.keys())
         wf_key_set=wf_key_set.union(wf_keys)
         workflow["actions"]=[]
-        wf_list.append(workflow)
+        wf_list.append(workflow["reEnrollmentTriggerSets"])
     print(len(wf_list))
-    with open("playground/logs/non_drip_workflows_dump.json", "w") as f:
+    with open("playground/logs/reenrollmenttriggersets4oct2.json", "w") as f:
         for wf in wf_list:
             f.write("%s\n" % wf)
     print(wf_key_set)
 
 if __name__ == "__main__":
-    copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
+    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
     #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
     #    copy_workflow(w_id, silent=False, simulate=False)
-    #dump_all_workflows()
+    dump_all_workflows()
     #get_log()
     #copy_workflow(6978233)
