@@ -274,14 +274,14 @@ def parse_reEnrollment(triggers):
                 else:
                     processed_trigger = trigger
                     processed_trigger[0]["id"] = mapped_id
-            elif trigger[0]["type"] == "FULL_URL":
-                processed_trigger = trigger
-            elif trigger[0]["type"] == "PARTIAL_URL":
+            elif trigger[0]["type"] == "PAGE_VIEW":
                 processed_trigger = trigger
             elif trigger[0]["type"] == "EVENT":
                 logger.log_event("skipped_reenrollment_trigger", {"type":"EVENT", "detail": "event id " + str(trigger[0]["id"])})
             elif trigger[0]["type"] == "INTEGRATIONS_TIMELINE_EVENT":
                 logger.log_event("skipped_reenrollment_trigger", {"type":"INTEGRATIONS_TIMELINE_EVENT", "detail": "integration timeline event id " + str(trigger[0]["id"])})
+            else:
+                raise ValueError("Unknown reenrollment trigger type encountered.")
         if processed_trigger != []:
             processed_triggers.append(processed_trigger)
     return processed_triggers

@@ -221,7 +221,7 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
     if not r and not silent:
         #print(r.text)
         print("Workflow " + str(workflow_id) + " could not be copied (Error " + str(r.status_code) +", see log subdirectory for full http response).")
-        with open("playground/logs/wf_REAL_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+        with open("playground/logs/wf_REAL_v14_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
             json.dump(r.json(), data_file, indent=2)
     elif not silent:
         print ("Workflow " + str(workflow_id) + " successfully copied.")
@@ -260,6 +260,8 @@ if __name__ == "__main__":
     #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
     #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
     #    copy_workflow(w_id, silent=False, simulate=False)
-    dump_all_workflows()
+    #dump_all_workflows()
     #get_log()
     #copy_workflow(6978233)
+    #copy_workflow(29347957)
+    copy_workflow(29351110)
