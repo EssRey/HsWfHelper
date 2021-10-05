@@ -9,6 +9,7 @@ hapikey_target = env_config["HAPIKEY_TARGET"]
 # list_copy.py
 
 list_name_prefix = "[mig_real_v2] "
+ils_dummy_prefix = "[migration_placeholder_list] "
 
 # workflow_copy.py
 

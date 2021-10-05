@@ -49,6 +49,38 @@ def segment_processor(segment):
     except AssertionError:
         print("this segment contains unknown keys: " + json.dumps(segment))
 
+    # log dependencies that may be missing data
+    filter_family = segment["filterFamily"]
+    if filter_family == "ListMembership":
+        # if list is active:
+        logger.log_event("segment_dependency", {"type": filter_family, "listId": str(segment["list"])})
+    elif filter_family == "Workflow":
+        logger.log_event("segment_dependency", {"type": filter_family, "workflowId": str(segment["workflowId"])})
+    elif filter_family == "FormSubmission":
+        try:
+            logger.log_event("segment_dependency", {"type": filter_family, "formId": str(segment["form"])})
+        except KeyError:
+            logger.log_event("segment_dependency", {"type": filter_family})
+    elif filter_family == "Email":
+        logger.log_event("segment_dependency", {"type": filter_family, "campaign_emailId": str(segment["emailEventFilter"]["emailId"])})
+    elif filter_family == "CTA":
+        logger.log_event("segment_dependency", {"type": filter_family, "ctaId": str(segment["value"])})
+    elif filter_family in ["Ads", "IntegrationsTimeline", "Event", "Import"]:
+        logger.log_event("segment_dependency", {"type": filter_family})
+    elif filter_family in ["PropertyValue", "CompanyPropertyValue", "DealProperty"]:
+        try:
+            if segment["checkPastVersions"] == True:
+                if filter_family == "DealProperty":
+                    filter_family = filter_family + "_" + str(segment["propertyObjectType"])
+                if segment["operator"] == "EQ":
+                    logger.log_event("segment_dependency", {"type": filter_family, "property": segment["property"], "detail": "HAS EVER BEEN EQUAL TO filter references property history, which has not been fully migrated"})
+                elif segment["operator"] == "NEQ":
+                    logger.log_event("segment_dependency", {"type": filter_family, "property": segment["property"], "detail": "HAS NEVER BEEN EQUAL TO filter references property history, which has not been fully migrated"})
+                elif segment["operator"] == "CONTAINS":
+                    logger.log_event("segment_dependency", {"type": filter_family, "property": segment["property"], "detail": "HAS EVER CONTAINED filter references property history, which has not been fully migrated"})
+        except KeyError:
+            pass
+
     def deal_property_placeholder(segment):
         placeholder_sub_segment = {
             "operator": "EQ",
@@ -162,21 +194,31 @@ def segment_processor(segment):
         processed_segment[key], event_log_key = operation_handler(segment[key])
         if event_log_key == "PLACEHOLDER_ABORT":
             event_log_segment.append({"log_type":"abort_substitution_" + key + "_in_" + segment["filterFamily"], "log":json.dumps(segment)})
+            logger.log_event("placeholder_segment", {"type": segment["filterFamily"]})
             return segment_placeholder(segment), event_log_segment
         if len(event_log_key) > 0:
             event_log_segment.append({"log_type": "key_"+key, "log":event_log_key})
 
     # substitute owner ID if owner property
+    if "value" in processed_segment:
+        if isinstance(processed_segment["value"], bool):
+            return processed_segment, event_log_segment
+    if "strValue" in processed_segment:
+        if isinstance(processed_segment["strValue"], bool):
+            return processed_segment, event_log_segment
     if "value" in processed_segment or "strValue" in processed_segment:
         object_type = None
+        log_event_type = "placeholder_segment"
         placeholder = segment_placeholder(segment)
         if processed_segment["filterFamily"]=="DealProperty":
             #assert "propertyObjectType" in processed_segment
             object_type = processed_segment["propertyObjectType"]
+            log_event_type = "placeholder_deal_subsegment"
             placeholder = deal_property_placeholder(segment)
         elif processed_segment["filterFamily"]=="Engagement":
             #assert "propertyObjectType" in processed_segment
             object_type = processed_segment["propertyObjectType"]
+            log_event_type = "placeholder_engagement_subsegment"
             placeholder = engagement_property_placeholder(segment)
         elif processed_segment["filterFamily"]=="CompanyPropertyValue":
             object_type = "COMPANY"
@@ -189,8 +231,6 @@ def segment_processor(segment):
                 owner_array = str(processed_segment["strValue"]).split(";")
             processed_owner_array = []
             for owner in owner_array:
-
-
                 confirmed_value = owner_id_check(owner,
                                                 processed_segment["property"],
                                                 object_type)
@@ -198,13 +238,17 @@ def segment_processor(segment):
                     assert confirmed_value["log_type"]=="SUBSTITUTION_ERROR"
                     event_log_segment.insert(0, {"log_type":"placeholder_segment_OWNERID_"+processed_segment["filterFamily"],
                                                 "log":confirmed_value["log"] + " (" + json.dumps(segment) + ")"})
+                    logger.log_event(log_event_type, {"type": processed_segment["filterFamily"]})
                     return placeholder, event_log_segment
                 else:
                     processed_owner_array.append(confirmed_value)
+            joined_owner_string = ";".join(processed_owner_array)
             if "value" in processed_segment:
-                processed_segment["value"] = ";".join(processed_owner_array)
-            else:
-                processed_segment["strValue"] = ";".join(processed_owner_array)
+                if str(processed_segment["value"]) != joined_owner_string:
+                    processed_segment["value"] = joined_owner_string
+            elif "strValue" in processed_segment:
+                if str(processed_segment["strValue"]) != joined_owner_string:
+                    processed_segment["strValue"] = joined_owner_string
     return processed_segment, event_log_segment
 
 ###
@@ -236,7 +280,9 @@ def parse_segments(segments, processor=segment_processor):
                 segment_log.append(necessary_condition_log)
         processed_segments.append(processed_sufficient_group)
     if segment_log != []:
-        print(segment_log)
+        #the following command would output the legacy event log trail (mostly id substitution errors in 3967897)
+        #print(segment_log)
+        pass
     return processed_segments
 
 def parse_reEnrollment(triggers):
@@ -248,14 +294,32 @@ def parse_reEnrollment(triggers):
         processed_trigger = []
         assert isinstance(trigger, list)
         if len(trigger) == 2:
-            assert trigger[0]["type"] == "CONTACT_PROPERTY_NAME"
-            mapped_value = owner_id_check(trigger[1]["id"], trigger[0]["id"], "CONTACT")
-            if isinstance(mapped_value, dict):
-                print("Error: owner id substitution failed. This error was logged.")
-                logger.log_event("skipped_reenrollment_trigger", {"type":"CONTACT_PROPERTY_NAME", "detail": "substitution failure ownerId"})
+            if trigger[0]["type"] == "CONTACT_PROPERTY_NAME":
+                mapped_value = owner_id_check(trigger[1]["id"], trigger[0]["id"], "CONTACT")
+                if isinstance(mapped_value, dict):
+                    print("Error: owner id substitution failed. This error was logged.")
+                    logger.log_event("skipped_reenrollment_trigger", {"type":"CONTACT_PROPERTY_NAME", "detail": "substitution failure ownerId"})
+                else:
+                    processed_trigger = trigger
+                    processed_trigger[1]["id"] = mapped_value
             else:
-                processed_trigger = trigger
-                processed_trigger[1]["id"] = mapped_value
+                assert trigger[0]["type"] == "FORM"
+                assert trigger[1]["type"] == "PAGE"
+                mapped_page_id = get_target_id("pageId", trigger[1]["id"])
+                if mapped_page_id is None:
+                    logger.log_event("skipped_reenrollment_trigger", {"type":"FORM", "detail": "substitution failure pageId"})
+                else:
+                    if "id" in trigger[0]:
+                        mapped_id = get_target_id("formId", trigger[0]["id"])
+                        if mapped_id is None:
+                            logger.log_event("skipped_reenrollment_trigger", {"type":"FORM", "detail": "substitution failure formId"})
+                        else:
+                            processed_trigger = trigger
+                            processed_trigger[0]["id"] = mapped_id
+                            processed_trigger[1]["id"] = mapped_page_id
+                    else:
+                        processed_trigger = trigger
+                        processed_trigger[1]["id"] = mapped_page_id
         else:
             assert len(trigger) == 1
             if trigger[0]["type"] == "CONTACT_PROPERTY_NAME":
@@ -268,12 +332,15 @@ def parse_reEnrollment(triggers):
                     processed_trigger = trigger
                     processed_trigger[0]["id"] = mapped_id
             elif trigger[0]["type"] == "FORM":
-                mapped_id = get_target_id("formId", trigger[0]["id"])
-                if mapped_id is None:
-                    logger.log_event("skipped_reenrollment_trigger", {"type":"FORM", "detail": "substitution failure formId"})
+                if "id" in trigger[0]:
+                    mapped_id = get_target_id("formId", trigger[0]["id"])
+                    if mapped_id is None:
+                        logger.log_event("skipped_reenrollment_trigger", {"type":"FORM", "detail": "substitution failure formId"})
+                    else:
+                        processed_trigger = trigger
+                        processed_trigger[0]["id"] = mapped_id
                 else:
                     processed_trigger = trigger
-                    processed_trigger[0]["id"] = mapped_id
             elif trigger[0]["type"] == "PAGE_VIEW":
                 processed_trigger = trigger
             elif trigger[0]["type"] == "EVENT":

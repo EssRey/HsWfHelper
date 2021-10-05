@@ -39,7 +39,6 @@ def url_create_wf(hapikey):
 # Placeholder creator function
 #-------------
 def create_placeholder(placeholder_content):
-    print("Placeholder action created for "+str(placeholder_content))
     placeholder_node = {"type": "SET_CONTACT_PROPERTY",
              "propertyName": action_placeholder_property,
              "newValue": json.dumps(placeholder_content)
@@ -53,16 +52,16 @@ def create_placeholder(placeholder_content):
 # Action processor function
 #-------------
 
-# TO DO auto-creation of "flag" (annotation) nodes
-
 def apply_schema(node):
     if node["type"] not in action_schemata:
         print("Warning: unknown action " + str(node["type"]))
+        logger.log_event("placeholder_action", {"type": node["type"]})
         return [create_placeholder(node)]
     schema = action_schemata[node["type"]]
     node_copy = {}
     for attribute in node:
         if schema[attribute]=="NOT_IMPLEMENTED":
+            logger.log_event("placeholder_action", {"type": node["type"]})
             return [create_placeholder(node)]
         elif schema[attribute]=="PASS":
             node_copy[attribute] = node[attribute]
@@ -74,9 +73,6 @@ def apply_schema(node):
                 node_copy[attribute] = None
             else:
                 substitution_result = get_target_id(attribute, node[attribute])
-                #if substitution_result is None:
-                #    return [create_placeholder(node)]
-                #else:
                 node_copy[attribute] = substitution_result
     # special cases
     def ambiguous_prop(prop):
@@ -84,31 +80,40 @@ def apply_schema(node):
         return obj_with_prop != ["company"]
     ## identify "delay until time of day or day of the week" actions
     if node_copy["type"] == "DELAY" and node_copy["delayMillis"] == 0 and "anchorSetting" not in node_copy:
+        logger.log_event("placeholder_action", {"type": node_copy["type"]})
         return [create_placeholder(node_copy)]
     ## identify set/copy property actions with a property that cannot be uniquely matched to contact or company
     elif node_copy["type"] == "SET_COMPANY_PROPERTY":
         if ambiguous_prop(node_copy["propertyName"]):
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node_copy)]
     elif node_copy["type"] == "COPY_PROPERTY" and node_copy["targetModel"] == "COMPANY":
         if ambiguous_prop(node_copy["targetProperty"]):
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node_copy)]
     elif node_copy["type"] == "DATE_STAMP_PROPERTY" and node_copy["model"] == "COMPANY":
         if ambiguous_prop(node_copy["targetProperty"]):
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node_copy)]
     elif node_copy["type"] == "ADD_COMPANY_ENUM_PROPERTY":
         if ambiguous_prop(node_copy["propertyName"]):
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node_copy)]
     ## flag possibly missing team IDs in the lead rotation action
     elif node_copy["type"] == "LEAD_ASSIGNMENT" and node_copy["teamId"] is not None:
+        logger.log_event("placeholder_action", {"type": node_copy["type"]})
         return [create_placeholder("TODO: check for missing Teams selected in following lead roation action."), node_copy]
     ## unassigned tasks now possible via UI, but API will error out
     elif node_copy["type"] == "TASK" and node_copy["ownerId"] is None and node_copy["ownerProperty"] is None:
+        logger.log_event("placeholder_action", {"type": node_copy["type"]})
         return [create_placeholder(node_copy)]
     ## any owner recipient in the "Send in-app notification" action need to be checked manually
     elif node_copy["type"] == "NOTIFICATION_STATION":
         if node_copy["recipientUserIds"] == [] and node_copy["recipientTeamIds"] == []:
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node)]
         else:
+            logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder("TODO: check for missing owner recipients in following notification action."), node_copy]
     # may have to consider "create ticket" and "create deal" actions here in future
     return [node_copy]
@@ -125,7 +130,10 @@ def process_actions(actions, node_processor):
     action_list = []
     logger.set_segment_context("branching")
     for action in actions:
+        if action["type"]=="WORKFLOW_ENROLLMENT":
+            logger.log_event("action_dependency", {"workflowId": str(action["workflowId"])})
         if action["type"]=="BRANCH":
+            logger.log_event("branching_action")
             branch_node = action.copy()
             branch_node["rejectActions"] = process_actions(action["rejectActions"], node_processor)
             branch_node["acceptActions"] = process_actions(action["acceptActions"], node_processor)
@@ -174,6 +182,7 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
             print("[Warning] Unknown workflow key: " + str(key) + " (skip and proceed)")
         else:
             if wf_schema[key]=="SUBSTITUTE":
+
                 target_workflow[key] = get_wf_key_value(key, workflow[key])
                 # short-circuit enrollment condition
                 if key == "segmentCriteria":
@@ -198,7 +207,7 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
     return target_workflow
 
 
-def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, prefix="", simulate=False):
+def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False):
     #workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     #print(workflow)
     #wf_type = workflow["type"]
@@ -227,12 +236,12 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         print ("Workflow " + str(workflow_id) + " successfully copied.")
     return r
 
-def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, prefix="TESTCOPY_", simulate=False):
+def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=False):
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
     for workflow in all_workflows:
         workflow_id = workflow["id"]
         newId = workflow["migrationStatus"]["flowId"]
-        r = copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, prefix=prefix, simulate=simulate)
+        r = copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, simulate=simulate)
         # log the http response
         #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(workflow_id)+".json", "w") as data_file:
         #    json.dump(r.json(), data_file, indent=2)
@@ -264,4 +273,6 @@ if __name__ == "__main__":
     #get_log()
     #copy_workflow(6978233)
     #copy_workflow(29347957)
-    copy_workflow(29351110)
+    #copy_workflow(29351110)
+    copy_all_workflows(simulate=True)
+    logger.write_log()
