@@ -54,7 +54,7 @@ The following list describes that can be migrated via API, based on inspection o
 ### Special cases
 * "If/then branch"
   * Can be migrated, but all its "middle branches" (i.e. branches other than the first positive (formerly "YES") branch and the "NO" branch) must be manually recreated
-* "Simple branch" (new in May 2021)
+* "Value equals branch" (formerly "Simple branch", introduced in May 2021)
   * Can only be migrated as a placeholder, AND all its branches must be manually recreated
 * "Create record"
   * deal and ticket migration actions can be migrated. Company creation action will be migrated as placeholder.
