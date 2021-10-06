@@ -247,32 +247,25 @@ def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
         #    json.dump(r.json(), data_file, indent=2)
 
 #temporary convenience function (for testing and inspection)
-def dump_all_workflows(hapikey_origin=hapikey_origin):
+def dump_all_workflows(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
     wf_list=[]
-    wf_key_set=set()
+    #wf_key_set=set()
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
     print(len(all_workflows))
     for workflow in all_workflows:
         workflow_id = workflow["id"]
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
-        wf_keys=set(workflow.keys())
-        wf_key_set=wf_key_set.union(wf_keys)
-        workflow["actions"]=[]
-        wf_list.append(workflow["reEnrollmentTriggerSets"])
+        #wf_keys=set(workflow.keys())
+        #wf_key_set=wf_key_set.union(wf_keys)
+        #workflow["actions"]=[]
+        wf_list.append(workflow)
     print(len(wf_list))
-    with open("playground/logs/reenrollmenttriggersets4oct2.json", "w") as f:
+    with open("playground/logs/"+portal_identifier+"_all_workflows.txt", "w") as f:
         for wf in wf_list:
             f.write("%s\n" % wf)
-    print(wf_key_set)
+    #print(wf_key_set)
 
 if __name__ == "__main__":
-    #copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False)
-    #for w_id in [2382774,2532410,2532466,2564776,3061268,3061274,3380420,3685474,4754778,4762765,5991996,6531825,6647332,6647334,6727626,6743897,6781224,6978233,7097420,7854920,9533603,26949206]:
-    #    copy_workflow(w_id, silent=False, simulate=False)
-    #dump_all_workflows()
-    #get_log()
-    #copy_workflow(6978233)
-    #copy_workflow(29347957)
-    #copy_workflow(29351110)
-    copy_all_workflows(simulate=True)
-    logger.write_log()
+    dump_all_workflows(hapikey_origin="hapikey", portal_identifier="CUSTOMERNAME")
+    #copy_all_workflows(simulate=True)
+    #logger.write_log("my_log")

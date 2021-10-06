@@ -71,30 +71,46 @@ def process_list(list_id, hapikey=hapikey_origin):
 #-------------
 # Active list copy related functions (external interface)
 #-------------
-def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target):
+def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=False):
     body = process_list(list_id, hapikey=hapikey_origin)
-    r = requests.post(url_create_list(hapikey_target), json = body)
-    if not r:
-        with open("playground/logs/list_v30_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
-            json.dump(r.json(), data_file, indent=2)
-        print("List " + str(list_id) + " could not be re-created. It will not me included in id mappings, and dependencies on it will not be flagged.")
-        logger.log_event("asset_creation_failure", {"listId": str(list_id)})
-    else:
-        #print("List " + str(list_id) + " copied successfully (new ID: " + str(r.json()["listId"]) + ").")
-        list_id_map[list_id] = str(r.json()["listId"])
+    if not simulate:
+        r = requests.post(url_create_list(hapikey_target), json = body)
+        if not r:
+            with open("playground/logs/list_v30_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+                json.dump(r.json(), data_file, indent=2)
+            print("List " + str(list_id) + " could not be re-created. It will not me included in id mappings, and dependencies on it will not be flagged.")
+            logger.log_event("asset_creation_failure", {"listId": str(list_id)})
+        else:
+            #print("List " + str(list_id) + " copied successfully (new ID: " + str(r.json()["listId"]) + ").")
+            list_id_map[list_id] = str(r.json()["listId"])
 
-def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target):
+def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=False):
     all_lists = all_lists_raw(hapikey=hapikey_origin)
     for mylist in all_lists:
         if "deleted" in mylist and mylist["deleted"]==True:
             pass
         else:
-            copy_list(mylist["listId"], hapikey_origin=hapikey_origin, hapikey_target=hapikey_target)
+            copy_list(mylist["listId"], hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=simulate)
+
+def dump_list(list_id, hapikey=hapikey_origin):
+    origin_list = requests.get(url_list(list_id, hapikey)).json()
+    return origin_list
+
+def dump_all_lists(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
+    all_lists = all_lists_raw(hapikey=hapikey_origin)
+    output_lists = []
+    for mylist in all_lists:
+        if "deleted" in mylist and mylist["deleted"]==True:
+            pass
+        else:
+            proc_list = dump_list(mylist["listId"], hapikey=hapikey_origin)
+            output_lists.append(proc_list)
+    with open("playground/logs/"+portal_identifier+"_all_lists.txt", "w") as f:
+        for wf in output_lists:
+            f.write("%s\n" % wf)
 
 if __name__ == "__main__":
-    #copy_all_lists()
-    #write_list_id_map("test_write_v30")
-    #for list_id in [524, 641, 894, 988, 992, 8053, 8057, 8063, 8065, 8066, 8070]:
-    #    copy_list(list_id)
-    copy_list(725)
+    copy_all_lists(simulate=True)
+    #dump_all_lists(hapikey_origin="hapikey", portal_identifier="CUSTOMERNAME")
+    #logger.write_log("my_log")
 
