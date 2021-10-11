@@ -63,6 +63,9 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
     elif event_key == "placeholder_action":
         #ok
         pass
+    elif event_key == "todo_action":
+        #ok
+        pass
     elif event_key == "placeholder_segment":
         #"type" key holds filterFamily, i.e. segment type
         #ok

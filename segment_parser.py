@@ -8,6 +8,8 @@ import logger
 # Configuration
 ###
 
+active_list_ids = config.active_list_ids
+
 # contact string property
 placeholder_property = config.placeholder_property
 
@@ -52,10 +54,10 @@ def segment_processor(segment):
     # log dependencies that may be missing data
     filter_family = segment["filterFamily"]
     if filter_family == "ListMembership":
-        # if list is active:
-        logger.log_event("segment_dependency", {"type": filter_family, "listId": str(segment["list"])})
+        if segment["list"] in active_list_ids:
+            logger.log_event("segment_dependency", {"type": filter_family, "listId": str(segment["list"])})
     elif filter_family == "Workflow":
-        logger.log_event("segment_dependency", {"type": filter_family, "workflowId": str(segment["workflowId"])})
+        logger.log_event("segment_dependency", {"type": "workflow", filter_family: str(segment["workflowId"])})
     elif filter_family == "FormSubmission":
         try:
             logger.log_event("segment_dependency", {"type": filter_family, "formId": str(segment["form"])})
@@ -226,6 +228,7 @@ def segment_processor(segment):
             object_type = "CONTACT"
         if object_type:
             if "value" in processed_segment:
+                #print(processed_segment["value"])
                 owner_array = str(processed_segment["value"]).split(";")
             else:
                 owner_array = str(processed_segment["strValue"]).split(";")
