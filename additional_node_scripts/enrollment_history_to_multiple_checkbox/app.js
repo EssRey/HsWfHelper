@@ -2,6 +2,9 @@ require('dotenv').config({ path: '../../.env'});
 const fs = require('fs');
 const axios = require('axios').default;
 const originHapiKey = process.env.HAPIKEY_ORIGIN;
+const axiosRetry = require('axios-retry');
+
+axiosRetry(axios, { retries: 5 });
 
 // Todo: Error handling
 
@@ -15,25 +18,30 @@ const delayMessage = async (listId) => {
 
 const getContactIdLists = async () => {
 
-    const response = await axios.get(`https://api.hubapi.com/automation/v3/workflows/?hapikey=${originHapiKey}`);
+    try {
+        const response = await axios.get(`https://api.hubapi.com/automation/v3/workflows/?hapikey=${originHapiKey}`);
 
-    const workflowsData = response.data.workflows;
+        const workflowsData = response.data.workflows;
+    
+        if (!workflowsData.length) {
+    
+            throw new Error('Could not get workflows');
+        }
+    
+        const contactListIds = [];
+    
+        for (workflow of workflowsData) {
+            contactListIds.push({
+                flowId_workflowId: `${workflow.migrationStatus.flowId}_${workflow.migrationStatus.workflowId}`,
+                contactListIds: workflow.contactListIds
+            });
+        }    
+    
+        return contactListIds;
 
-    if (!workflowsData.length) {
-
-        throw new Error('Could not get workflows');
+    } catch(error) {
+        console.error(error);
     }
-
-    const contactListIds = [];
-
-    for (workflow of workflowsData) {
-        contactListIds.push({
-            flowId_workflowId: `${workflow.migrationStatus.flowId}_${workflow.migrationStatus.workflowId}`,
-            contactListIds: workflow.contactListIds
-        });
-    }    
-
-    return contactListIds;
 
 }
 
@@ -55,40 +63,46 @@ const getContactsByListId = async () => {
 
         let listURL = `https://api.hubapi.com/contacts/v1/lists/${workflow.contactListIds.enrolled}/contacts/all?hapikey=${originHapiKey}&count=100&vidOffset=`;
 
-        console.log(`Getting contacts from list #${workflow.contactListIds.enrolled} (${(i + 1)} of ${contactIdLists.length})`);
+        try {
+            console.log(`Getting contacts from list #${workflow.contactListIds.enrolled} (${(i + 1)} of ${contactIdLists.length})`);
 
-        let response = await axios.get(listURL);
-
-        lastContacts = response.data.contacts;
-
-        runningContacts = lastContacts;
-
-        let offset = response.data['vid-offset'];
-
-        limit = response.headers['x-hubspot-ratelimit-remaining'];
-
-        // Paginate if 'has-more' = true with 'vid-offset'
-
-        while (response.data['has-more']) {
-
-            listURL = `https://api.hubapi.com/contacts/v1/lists/${workflow.contactListIds.enrolled}/contacts/all?hapikey=${originHapiKey}&count=100&vidOffset=${offset}`;
-
-            response = await axios.get(listURL);
-
+            let response = await axios.get(listURL);
+    
             lastContacts = response.data.contacts;
-
-            runningContacts = [...runningContacts, ...lastContacts];
-
-            offset = response.data['vid-offset'];
-
+    
+            runningContacts = lastContacts;
+    
+            let offset = response.data['vid-offset'];
+    
             limit = response.headers['x-hubspot-ratelimit-remaining'];
+    
+            // Paginate if 'has-more' = true with 'vid-offset'
+    
+            while (response.data['has-more']) {
 
-            // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
-
-            if (limit < 10) {
-                await delayMessage(workflow.contactListIds.enrolled);
+                console.log(`List #${workflow.contactListIds.enrolled} 'has more: Still getting contacts...`);
+    
+                listURL = `https://api.hubapi.com/contacts/v1/lists/${workflow.contactListIds.enrolled}/contacts/all?hapikey=${originHapiKey}&count=100&vidOffset=${offset}`;
+    
+                response = await axios.get(listURL);
+    
+                lastContacts = response.data.contacts;
+    
+                runningContacts = [...runningContacts, ...lastContacts];
+    
+                offset = response.data['vid-offset'];
+    
+                limit = response.headers['x-hubspot-ratelimit-remaining'];
+    
+                // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
+    
+                if (limit < 10) {
+                    await delayMessage(workflow.contactListIds.enrolled);
+                }
+    
             }
-
+        } catch(error) {
+            console.log(`Could not get list ${workflow.contactListIds.enrolled}: ${error}`)
         }
 
         const key = workflow.flowId_workflowId;
@@ -101,12 +115,16 @@ const getContactsByListId = async () => {
 
     }
 
-    writeContactsByListFile(workflowContacts);
+    try {
+        writeContactsByListFile(workflowContacts);
+    } catch(error) {
+        console.error(error);
+    }
 
     return workflowContacts;
 }
 
-getContactsByListId()
+getContactsByListId();
 
 const writeContactsByListFile = contactsByList => {
     const contactsByListJson = {"contacts_by_list": contactsByList};

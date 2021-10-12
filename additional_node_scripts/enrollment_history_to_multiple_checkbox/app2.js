@@ -2,6 +2,9 @@ require('dotenv').config({ path: '../../.env'});
 const axios = require('axios').default;
 const targetHapiKey = process.env.HAPIKEY_TARGET;
 const wfsData = require('./results/contactsByList');
+const axiosRetry = require('axios-retry');
+
+axiosRetry(axios, { retries: 5 });
 
 const timer = () => new Promise(res => setTimeout(res, 10000));
 
@@ -61,8 +64,6 @@ const createPropConcatWFs = async () => {
         "formField": false
     };
 
-    // Todo: If property exists, update multicheck with new values?
-
     // create custom property in target portal
 
     try {
@@ -70,9 +71,11 @@ const createPropConcatWFs = async () => {
 
         if (response.statusText === 'OK') console.log('Workflow IDs property successfully created in portal');
 
-    } catch(err) {
+    } catch(error) {
 
-        if (err.response.status === 409) console.log('Property already exists in target portal');
+        if (error.response.status === 409) console.log('Property already exists in target portal');
+
+        // Todo: PUT options to update multicheck options here on 409
     }
 
     return wfIdsByEmail;
@@ -87,7 +90,7 @@ const formatRequests = (wfIdsByEmail) => {
     }
 
     let i = 0;
-    //batchSize = contacts per API call (recommended max 100 per V1 endpoint docs)
+    //batchSize = contacts per API call (recommended MAX 100 per V1 endpoint docs)
     let batchSize = 100;
     let batchedContacts = [];
 
@@ -133,7 +136,7 @@ const updatePropertyByEmail = async () => {
         throw new Error('No contacts to update');
     }
 
-    const requests = await formatRequests(wfIdsByEmail);
+    const requests = formatRequests(wfIdsByEmail);
 
     let limit = 100;
 
@@ -143,16 +146,21 @@ const updatePropertyByEmail = async () => {
 
         let contactBatch = requests[i];
 
-        console.log(`Writing contacts to target portal (batch ${(i + 1)} of ${requests.length})`);
+        try {
+            console.log(`Writing contacts to target portal (batch ${(i + 1)} of ${requests.length})`);
 
-        let response = await axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, contactBatch);
-
-        limit = response.headers['x-hubspot-ratelimit-remaining'];
-
-        // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
-        if (limit < 10) {
-            await delayMessage();
+            let response = await axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, contactBatch);
+    
+            limit = response.headers['x-hubspot-ratelimit-remaining'];
+    
+            // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
+            if (limit < 10) {
+                await delayMessage();
+            }
+        } catch(error) {
+            console.log(`Could not post batch ${(i + 1)} of ${requests.length}: ${error}`);
         }
+
     }
 
     console.log('Contacts written to/updated in target portal. Script execution complete');
