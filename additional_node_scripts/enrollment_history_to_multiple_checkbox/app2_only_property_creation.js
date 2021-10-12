@@ -112,7 +112,7 @@ const formatRequests = (wfIdsByEmail) => {
                 "email": key,
                 "properties": [
                     {
-                        "property": "pre_migration_workflow_enrollments",
+                        "property": "workflow_ids",
                         "value": spreadContactObjects[key]
                     }
                 ]
@@ -130,40 +130,7 @@ const formatRequests = (wfIdsByEmail) => {
 const updatePropertyByEmail = async () => {
 
     const wfIdsByEmail = await createPropConcatWFs();
-
-    if (!Object.keys(wfIdsByEmail).length) {
-
-        throw new Error('No contacts to update');
-    }
-
-    const requests = formatRequests(wfIdsByEmail);
-
-    let limit = 100;
-
-    // Make API call for each batch of contacts (obj in array)
-
-    for (let i = 0; i < requests.length; i++) {
-
-        let contactBatch = requests[i];
-
-        try {
-            console.log(`Writing contacts to target portal (batch ${(i + 1)} of ${requests.length})`);
-
-            let response = await axios.post(`https://api.hubapi.com/contacts/v1/contact/batch/?hapikey=${targetHapiKey}`, contactBatch);
-    
-            limit = response.headers['x-hubspot-ratelimit-remaining'];
-    
-            // Pause execution for 10 seconds if rate limit remaining nears buffer (10 for testing)
-            if (limit < 10) {
-                await delayMessage();
-            }
-        } catch(error) {
-            console.log(`Could not post batch ${(i + 1)} of ${requests.length}: ${error}`);
-        }
-
-    }
-
-    console.log('Contacts written to/updated in target portal. Script execution complete');
+    console.log('Multi-checkbox property was created. Script completed.');
 }
 
 updatePropertyByEmail();

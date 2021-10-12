@@ -1,0 +1,1 @@
+This directory contains all log files produces during a specific migration. config.log_destination defaults to this directory.

@@ -7,6 +7,7 @@ import time
 from segment_parser import parse_segments, segment_placeholder
 import config
 import logger
+from id_mapper import set_id
 
 #-------------
 # Configuration
@@ -83,14 +84,17 @@ def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_tar
     body = process_list(list_id, hapikey=hapikey_origin)
     if not simulate:
         r = requests.post(url_create_list(hapikey_target), json = body)
+        with open(config.log_destination+"list"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+            json.dump(r.json(), data_file, indent=2)
         if not r:
-            with open("playground/logs/list_v30_"+str(list_id)+"_"+str(r.status_code)+".json", "w") as data_file:
-                json.dump(r.json(), data_file, indent=2)
-            print("List " + str(list_id) + " could not be re-created. It will not me included in id mappings, and dependencies on it will not be flagged.")
+            logger.log_event("copy_failure")
+            print("List " + str(list_id) + " could not be re-created. It will not be included in id mappings, and dependencies on it will not be flagged.")
             logger.log_event("asset_creation_failure", {"listId": str(list_id)})
         else:
-            #print("List " + str(list_id) + " copied successfully (new ID: " + str(r.json()["listId"]) + ").")
+            logger.log_event("copy_success")
+            print("List " + str(list_id) + " copied successfully (new ID: " + str(r.json()["listId"]) + ").")
             list_id_map[list_id] = str(r.json()["listId"])
+            set_id("listId", list_id, int(r.json()["listId"]))
 
 def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=False):
     all_lists = all_lists_raw(hapikey=hapikey_origin)
@@ -113,7 +117,7 @@ def dump_all_lists(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
         else:
             proc_list = dump_list(mylist["listId"], hapikey=hapikey_origin)
             output_lists.append(proc_list)
-    with open("playground/logs/"+portal_identifier+"_all_lists.txt", "w") as f:
+    with open(config.log_destination+portal_identifier+"_all_lists.txt", "w") as f:
         for wf in output_lists:
             f.write("%s\n" % wf)
 

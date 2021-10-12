@@ -1,10 +1,12 @@
 import json
 from typing import Any, Tuple
 import pandas as pd
+import pickle
 
 object_type = ""
 object_id = ""
 segment_context = ""
+workflow_flow_id = ""
 
 full_log = []
 
@@ -17,14 +19,20 @@ full_log = []
 # a logged event has the form [TAG, LOG], where TAG is a string and LOG is a dict
 ###
 
-def set_logging_object(obj_type: str, obj_id: Any) -> None:
+def set_logging_object(obj_type: str, obj_id: Any, flow_id: Any = "") -> None:
     global object_id
     global object_type
     global segment_context
-    assert obj_type in ["static_list", "active_list", "workflow"]
-    object_id = str(obj_id)
-    object_type = obj_type
-    segment_context = ""
+    global workflow_flow_id
+    if str(obj_id) == object_id and obj_type == object_type:
+        return None
+    else:
+        assert obj_type in ["static_list", "active_list", "workflow"]
+        object_id = str(obj_id)
+        object_type = obj_type
+        segment_context = ""
+        workflow_flow_id = flow_id
+        log_event("copy_start")
 
 def set_segment_context(context: str) -> None:
     global segment_context
@@ -94,10 +102,33 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
         pass
     elif event_key == "asset_creation_failure":
         #keys either "listId" or "workflowId"
+        # REDUNDANT (see copy_failure)
         #ok
         pass
+    elif event_key == "copy_start":
+        #ok
+        pass
+    elif event_key == "copy_failure":
+        #ok
+        pass
+    elif event_key == "copy_success":
+        #ok
+        pass
+    elif event_key == "see_an_action":
+        #any non-branch action
+        # has type key
+        #ok
+        pass
+    elif event_key == "see_a_segment":
+        #any segment or subsegment
+        # has type key
+        pass
+    elif event_key == "see_a_reenrollment_trigger":
+        #any reenrollment trigger
+        # has type key
+        pass
     else:
-        raise ValueError("Unknown logging event key.")
+        raise ValueError("Unknown logging event key: " + str(event_key))
     event = {"object_type": object_type,
              "object_id": object_id,
              "segment_context": segment_context,
@@ -108,3 +139,7 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
 def write_log(log_file_name: str) -> None:
     log_df = pd.DataFrame(full_log)
     log_df.to_csv(log_file_name+".csv", index=False)
+    with open(log_file_name+".pickle", 'wb') as handle:
+        pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('full_log.pickle', 'rb') as handle:
+    #    b = pickle.load(handle)

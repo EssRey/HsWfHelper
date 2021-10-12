@@ -40,6 +40,7 @@ def owner_id_check(value, prop, object_type):
     return value
 
 def segment_processor(segment):
+    logger.log_event("see_a_segment", {"type": segment["filterFamily"]})
     # validation of filterFamily type and top-level keys
     schema = {}
     try:
@@ -294,6 +295,7 @@ def parse_reEnrollment(triggers):
         return []
     processed_triggers = []
     for trigger in triggers:
+        logger.log_event("see_a_reenrollment_trigger", {"type": trigger[0]["type"]})
         processed_trigger = []
         assert isinstance(trigger, list)
         if len(trigger) == 2:

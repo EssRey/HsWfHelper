@@ -26,7 +26,7 @@ const countCalls = () => {
 }
 
 const listsArray = fs.readdirSync('listsWithContacts');
-const idMapping = JSON.parse(fs.readFileSync('../../id_mappings/listIdMapping.json', 'utf8'));
+const idMapping = JSON.parse(fs.readFileSync('../../id_mappings/staticListIdMapping.json', 'utf8'));
 
 contactArrays = listsArray
     .map(list => {

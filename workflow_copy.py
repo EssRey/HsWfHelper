@@ -3,7 +3,7 @@
 #-------------
 import requests, json
 #from dotenv import dotenv_values
-from id_mapper import get_target_id
+from id_mapper import get_target_id, set_id
 from wf_key_mapper import get_wf_key_value
 import time
 from segment_parser import parse_segments
@@ -53,6 +53,7 @@ def create_placeholder(placeholder_content):
 #-------------
 
 def apply_schema(node):
+    logger.log_event("see_an_action", {"type": node["type"]})
     if node["type"] not in action_schemata:
         print("Warning: unknown action " + str(node["type"]))
         logger.log_event("placeholder_action", {"type": node["type"]})
@@ -159,33 +160,38 @@ def process_actions(actions, node_processor):
 #-------------
 
 def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False):
-    logger.set_logging_object("workflow", workflow_id)
     try:
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     except:
         print("crazy retry pause starts")
         time.sleep(10)
         workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
+    flowId = workflow["migrationStatus"]["flowId"]
+    logger.set_logging_object("workflow", workflow_id, flowId)
+
     actions = process_actions(workflow["actions"], apply_schema)
     # short circuit action
-    actions = [
-        {
-            "type": "BRANCH",
-            "filters": [
-                [
-                    {
-                        "operator": "IS_EMPTY",
-                        "filterFamily": "PropertyValue",
-                        "withinTimeMode": "PAST",
-                        "property": "createdate",
-                        "type": "datetime"
-                    }
-                ]
-            ],
-            "rejectActions": [],
-            "acceptActions": actions
-        }
-    ]
+    if workflow["type"] == "DRIP_DELAY":
+        actions = [
+            {
+                "type": "BRANCH",
+                "filters": [
+                    [
+                        {
+                            "operator": "IS_EMPTY",
+                            "filterFamily": "PropertyValue",
+                            "withinTimeMode": "PAST",
+                            "property": "createdate",
+                            "type": "datetime"
+                        }
+                    ]
+                ],
+                "rejectActions": [],
+                "acceptActions": actions
+            }
+        ]
+    else:
+        actions = []
     target_workflow = {
         "actions": actions
     }
@@ -197,15 +203,15 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
 
                 target_workflow[key] = get_wf_key_value(key, workflow[key])
                 # short-circuit enrollment condition
-                if key == "segmentCriteria":
+                if key == "segmentCriteria" and workflow["type"] == "DRIP_DELAY":
                     additional_trigger = [
                         {
-                            "operator": "CONTAINS",
-                            "filterFamily": "PropertyValue",
                             "withinTimeMode": "PAST",
-                            "property": "message",
-                            "value": str(workflow_id),
-                            "type": "string"
+                            "filterFamily": "PropertyValue",
+                            "operator": "SET_ANY",
+                            "type": "enumeration",
+                            "property": config.short_circuit_property,
+                            "value": str(flowId)+"_"+str(workflow_id)
                         }
                     ]
                     target_workflow[key].append(additional_trigger)
@@ -214,6 +220,8 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
                     #print(test)
             elif wf_schema[key]=="PASS":
                 target_workflow[key] = workflow[key]
+    if workflow["type"] != "DRIP_DELAY":
+        target_workflow["enabled"] = False
 #    print(workflow.keys())
 #    print(target_workflow)
     return target_workflow
@@ -239,23 +247,25 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
         silent = True
     else:
         r = requests.post(url_create_wf(hapikey_target), json = body)
-    if not r and not silent:
-        #print(r.text)
-        print("Workflow " + str(workflow_id) + " could not be copied (Error " + str(r.status_code) +", see log subdirectory for full http response).")
-        with open("playground/logs/wf_REAL_v14_"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
+        with open(config.log_destination+"wf"+str(workflow_id)+"_"+str(r.status_code)+".json", "w") as data_file:
             json.dump(r.json(), data_file, indent=2)
+    if not r and not silent:
+        logger.log_event("copy_failure")
+        print("Workflow " + str(workflow_id) + " could not be copied (Error " + str(r.status_code) +", see log subdirectory for full http response).")
     elif not silent:
+        logger.log_event("copy_success")
         print ("Workflow " + str(workflow_id) + " successfully copied.")
+        set_id("workflowId", workflow_id, int(r.json()["id"]))
     return r
 
-def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=True, simulate=False):
+def copy_all_workflows(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False):
     all_workflows = requests.get(url_wf_all(hapikey_origin)).json()["workflows"]
     for workflow in all_workflows:
         workflow_id = workflow["id"]
-        newId = workflow["migrationStatus"]["flowId"]
+        #newId = workflow["migrationStatus"]["flowId"]
         r = copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=silent, simulate=simulate)
         # log the http response
-        #with open("playground/logs/"+str(r.status_code)+"__"+str(newId)+"_"+str(workflow_id)+".json", "w") as data_file:
+        #with open(config.log_destination + "wf_"+str(r.status_code)+"__"+str(newId)+"_"+str(workflow_id)+".json", "w") as data_file:
         #    json.dump(r.json(), data_file, indent=2)
 
 #temporary convenience function (for testing and inspection)
@@ -272,7 +282,7 @@ def dump_all_workflows(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
         #workflow["actions"]=[]
         wf_list.append(workflow)
     print(len(wf_list))
-    with open("playground/logs/"+portal_identifier+"_all_workflows.txt", "w") as f:
+    with open(config.log_destination+portal_identifier+"_all_workflows.txt", "w") as f:
         for wf in wf_list:
             f.write("%s\n" % wf)
     #print(wf_key_set)

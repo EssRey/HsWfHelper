@@ -1,6 +1,10 @@
 import csv
 import glob
 import json
+with open("inputs/id_mappings.json", "w") as data_file:
+    json.dump({}, data_file, indent=2)
+with open('inputs/active_list_ids.json', 'w') as file:
+    json.dump([], file)
 from list_copy import all_lists_raw
 import json
 
@@ -90,7 +94,7 @@ for filename in files:
                 base_dict[keyword]["map"][row[0]] = final_value
 
 try:
-    with open("id_mappings/staticListIdMapping.json", "r") as read_file:
+    with open("id_mappings/StaticListIdMapping.json", "r") as read_file:
         base_dict["listId"]["map"].update(json.load(read_file))
 except FileNotFoundError:
     print("No static list ID mappings found.")

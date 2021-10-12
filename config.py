@@ -6,10 +6,14 @@ env_config = dotenv_values(".env")
 hapikey_origin = env_config["HAPIKEY_ORIGIN"]
 hapikey_target = env_config["HAPIKEY_TARGET"]
 
+
+log_destination = "logs/IF_IT_"
+short_circuit_property = "pre_migration_workflow_enrollments"
+
 # list_copy.py
 
-list_name_prefix = "[mig_real_v2] "
-ils_dummy_prefix = "[migration_placeholder_list] "
+list_name_prefix = ""
+ils_dummy_prefix = ""
 
 # workflow_copy.py
 
@@ -28,8 +32,8 @@ placeholder_engagement_property = "hs_note_body"
 
 # wf_key_mapper.py
 
-name_prefix = "migrated_v15_"
-all_enabled = False
+name_prefix = ""
+all_enabled = True
 staticDateDummy = {"staticDateAnchor": "01/31/2022"}
 
 ###

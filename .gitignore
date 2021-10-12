@@ -19,6 +19,9 @@ not_ready/
 misc_docs/
 playground/
 results/
+logs/*.json
+logs/*.txt
+logs/*.csv
 __pycache__/
 ~$tions_catalog.docx
 actions_catalog.docx
@@ -27,3 +30,5 @@ reference_owner_properties.json
 reference_properties.json
 active_list_ids.json
 full_log.csv
+full_migration_log.csv
+full_migration_log.pickle

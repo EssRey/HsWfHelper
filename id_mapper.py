@@ -123,3 +123,8 @@ def get_target_id(attribute, value_origin):
         # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
         # (remove mappings and fallback if an ID should not be changed)
         return attribute_to_getter[attribute](value_origin)
+
+def set_id(attribute, new_key, new_value):
+    if attribute in id_mappings:
+        id_mappings[attribute]["map"][str(new_key)] = new_value
+

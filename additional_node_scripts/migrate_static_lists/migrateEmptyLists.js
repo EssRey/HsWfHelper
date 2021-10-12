@@ -76,7 +76,7 @@ const getStaticListsOrigin = async () => {
   /**
    * Recreates lists in target portal and creates a mappingJson.
    * @param  {Object} data  array of lists that are to be recreated.
-   * @return {file}         StaticListIdMapping.json in global id_mappings-directory.
+   * @return {file}         staticListIdMapping.json in global id_mappings-directory.
    */
 const cloneListsIntoTarget = async (data) => {
     let finalJson = '{\n';
@@ -98,7 +98,7 @@ const cloneListsIntoTarget = async (data) => {
         } 
     }
     finalJson = finalJson.slice(0, -3) + '\n}';
-    fs.writeFileSync('../../id_mappings/StaticListIdMapping.json', finalJson); 
+    fs.writeFileSync('../../id_mappings/staticListIdMapping.json', finalJson); 
     return listIdArray;
 }
 
