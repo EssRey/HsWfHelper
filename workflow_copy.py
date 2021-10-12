@@ -73,7 +73,11 @@ def apply_schema(node):
                 node_copy[attribute] = None
             else:
                 substitution_result = get_target_id(attribute, node[attribute])
-                node_copy[attribute] = substitution_result
+                if substitution_result is None:
+                    logger.log_event("placeholder_action", {"type": node["type"]})
+                    return [create_placeholder(node_copy)]
+                else:
+                    node_copy[attribute] = substitution_result
     # special cases
     def ambiguous_prop(prop):
         obj_with_prop = [obj for obj in reference_properties if prop in reference_properties[obj]]
@@ -101,7 +105,7 @@ def apply_schema(node):
             return [create_placeholder(node_copy)]
     ## flag possibly missing team IDs in the lead rotation action
     elif node_copy["type"] == "LEAD_ASSIGNMENT" and node_copy["teamId"] is not None:
-        logger.log_event("placeholder_action", {"type": node_copy["type"]})
+        logger.log_event("todo_action", {"type": node_copy["type"]})
         return [create_placeholder("TODO: check for missing Teams selected in following lead roation action."), node_copy]
     ## unassigned tasks now possible via UI, but API will error out
     elif node_copy["type"] == "TASK" and node_copy["ownerId"] is None and node_copy["ownerProperty"] is None:
@@ -113,15 +117,23 @@ def apply_schema(node):
             logger.log_event("placeholder_action", {"type": node_copy["type"]})
             return [create_placeholder(node)]
         else:
-            logger.log_event("placeholder_action", {"type": node_copy["type"]})
+            logger.log_event("todo_action", {"type": node_copy["type"]})
             return [create_placeholder("TODO: check for missing owner recipients in following notification action."), node_copy]
     # may have to consider "create ticket" and "create deal" actions here in future
+    # double-check types
+    for key_origin in node:
+        if key_origin in node_copy:
+            if type(node[key_origin]) != type(node_copy[key_origin]):
+                raise TypeError(str(logger.object_type)+"_"+str(logger.object_id) + " " + str(key_origin) + " type discrepancy:")
+                #print(str(logger.object_type)+"_"+str(logger.object_id) + " " + str(key_origin) + " type discrepancy:")
+                #print(node)
+                #print(node_copy)
     return [node_copy]
 
 #-------------
 # Graph traversal function 
 # (recursive version)
-# (this relies on list copies in order to facilitate element insertion during iteration)
+# (relies on list copies in order to facilitate element insertion during iteration)
 #-------------
 
 def process_actions(actions, node_processor):
@@ -266,6 +278,6 @@ def dump_all_workflows(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
     #print(wf_key_set)
 
 if __name__ == "__main__":
-    dump_all_workflows(hapikey_origin="hapikey", portal_identifier="CUSTOMERNAME")
-    #copy_all_workflows(simulate=True)
+    #dump_all_workflows(hapikey_origin="hapikey", portal_identifier="CUSTOMER")
+    copy_all_workflows(simulate=True)
     #logger.write_log("my_log")

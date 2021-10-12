@@ -54,8 +54,7 @@ def string_echo(some_string):
     return some_string
 
 with open("inputs/id_mappings.json", "r") as read_file:
-    id_mappings = json.load(read_file, parse_int=string_echo)
+    id_mappings = json.load(read_file)#, parse_int=string_echo)
 
-#test = id_mappings["emailContentId"]["map"]["10387829496"]
-#print(test)
-#print(type(test))
+with open("inputs/active_list_ids.json", "r") as read_file:
+    active_list_ids = json.load(read_file)

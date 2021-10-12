@@ -48,10 +48,10 @@ def all_lists_raw(hapikey=hapikey_origin):
 def create_placeholder_filter(content):
     return [[segment_placeholder(content)]]
 
-def write_list_id_map(file_name: str = "active_lists"):
-    output_dict = {"listId": {"map": list_id_map, "fallback": None}}
-    with open("id_mappings/" + file_name + ".json", "w") as data_file:
-        json.dump(output_dict, data_file, indent=2)
+#def write_list_id_map(file_name: str = "active_lists"):
+#    output_dict = {"listId": {"map": list_id_map, "fallback": None}}
+#    with open("id_mappings/" + file_name + ".json", "w") as data_file:
+#        json.dump(output_dict, data_file, indent=2)
 
 def process_list(list_id, hapikey=hapikey_origin):
     logger.set_logging_object("active_list", list_id)
@@ -66,6 +66,14 @@ def process_list(list_id, hapikey=hapikey_origin):
         logger.log_event("placeholder_ils_filter")
         target_list["filters"] = create_placeholder_filter(origin_list["ilsFilterBranch"])
         target_list["name"] = ils_dummy_prefix + target_list["name"]
+    # double-check types
+    for key_origin in origin_list:
+        if key_origin in target_list:
+            if type(origin_list[key_origin]) != type(target_list[key_origin]):
+                #raise TypeError(str(logger.object_type)+"_"+str(logger.object_id) + " " + str(key_origin) + " type discrepancy:")
+                print(str(logger.object_type)+"_"+str(logger.object_id) + " " + str(key_origin) + " type discrepancy:")
+                print(origin_list)
+                print(target_list)
     return target_list
 
 #-------------
@@ -111,6 +119,7 @@ def dump_all_lists(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
 
 if __name__ == "__main__":
     copy_all_lists(simulate=True)
-    #dump_all_lists(hapikey_origin="hapikey", portal_identifier="CUSTOMERNAME")
+    #dump_all_lists(hapikey_origin="hapikey", portal_identifier="CUSTOMER")
     #logger.write_log("my_log")
+    #print(all_lists_raw()[0]["listId"])
 
