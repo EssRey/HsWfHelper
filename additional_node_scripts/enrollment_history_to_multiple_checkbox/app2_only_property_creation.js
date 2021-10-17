@@ -4,7 +4,10 @@ const targetHapiKey = process.env.HAPIKEY_TARGET;
 const wfsData = require('./results/contactsByList');
 const axiosRetry = require('axios-retry');
 
-axiosRetry(axios, { retries: 5 });
+axiosRetry(axios, { 
+    retries: 5,
+    retryDelay: axiosRetry.exponentialDelay 
+});
 
 const timer = () => new Promise(res => setTimeout(res, 10000));
 
@@ -17,7 +20,7 @@ const delayMessage = async () => {
 // consolidated concat func and create property function for one loop through contacts_by_list
 const createPropConcatWFs = async () => {
 
-    const array = wfsData.contacts_by_list;
+    const array = wfsData;
     const propertyOptions = [];
 
     // create obj with email: semicolon separated wfids (formatted to update multicheck property)

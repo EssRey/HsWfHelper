@@ -4,7 +4,10 @@ const axios = require('axios').default;
 const originHapiKey = process.env.HAPIKEY_ORIGIN;
 const axiosRetry = require('axios-retry');
 
-axiosRetry(axios, { retries: 5 });
+axiosRetry(axios, { 
+    retries: 5,
+    retryDelay: axiosRetry.exponentialDelay 
+});
 
 // Todo: Error handling
 
@@ -67,8 +70,18 @@ const getContactsByListId = async () => {
             console.log(`Getting contacts from list #${workflow.contactListIds.enrolled} (${(i + 1)} of ${contactIdLists.length})`);
 
             let response = await axios.get(listURL);
+
+            let deleteProps = response.data.contacts.map(contact =>  {
+                return { 
+                    'vid': contact['vid'],
+                    'canonical-vid': contact['canonical-vid'],
+                    'merged-vids': contact['merged-vids'],
+                    'identity-profiles': contact['identity-profiles'],
+                    'merge-audits': contact['merge-audits'],
+                } 
+            });
     
-            lastContacts = response.data.contacts;
+            lastContacts = deleteProps;
     
             runningContacts = lastContacts;
     
@@ -86,7 +99,15 @@ const getContactsByListId = async () => {
     
                 response = await axios.get(listURL);
     
-                lastContacts = response.data.contacts;
+                lastContacts = response.data.contacts.map(contact =>  {
+                    return { 
+                        'vid': contact['vid'],
+                        'canonical-vid': contact['canonical-vid'],
+                        'merged-vids': contact['merged-vids'],
+                        'identity-profiles': contact['identity-profiles'],
+                        'merge-audits': contact['merge-audits'],
+                    } 
+                });
     
                 runningContacts = [...runningContacts, ...lastContacts];
     
@@ -127,7 +148,14 @@ const getContactsByListId = async () => {
 getContactsByListId();
 
 const writeContactsByListFile = contactsByList => {
-    const contactsByListJson = {"contacts_by_list": contactsByList};
-    testFile = JSON.stringify(contactsByListJson, null, 2);
-    fs.writeFileSync('results/contactsByList.json', testFile);
-}
+
+    let out = "[";
+        for (let i = 0; i < contactsByList.length-1; i++) {
+                out+=JSON.stringify(contactsByList[i])+",";
+            }
+        out += JSON.stringify(contactsByList[contactsByList.length - 1]) + "]"
+
+    fs.writeFileSync('results/contactsByList.json', out);
+
+    console.log('File written successfully');
+} 
