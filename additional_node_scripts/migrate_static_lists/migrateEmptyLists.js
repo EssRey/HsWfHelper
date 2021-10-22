@@ -5,7 +5,7 @@ const axios = require('axios');
 const fs = require('fs');
 const { url } = require('inspector');
 let callCounter = 0;
-
+let error = false;
 
 //Format required endpoints
 const getListsEndpoint = 'https://api.hubapi.com/contacts/v1/lists/static?hapikey=' + apiKeyOrigin; 
@@ -35,18 +35,41 @@ const countCalls = () => {
 
 //
 const getContactEmailsInList = async (uniqueListId) => {
-    countCalls();
-    getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email`;
-    let res = await axios.get(getContactsInListEndpoint);
+    console.log(`Reading list ${uniqueListId}`);
+    getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email&count=100`;
+    do {
+        error = false;
+        try {
+            countCalls();
+            var res = await axios.get(getContactsInListEndpoint);
+
+        }
+        catch(error) {
+            error = true;
+            console.log('Error occured. Retrying in 2 seconds');
+            sleep(2000);
+        }
+    } while (error);
     let contactArray = res.data.contacts;
     let emailArray = [];
     let placeholderArray
     if (contactArray) emailArray = contactArray.map(contact => contact.properties.email ? contact.properties.email.value : "noEmail"); 
     vidOffset = res.data['vid-offset']; 
     while(res.data['has-more']) {
-        countCalls();
-        getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email&vidOffset=${vidOffset}`;
-        res = await axios.get(getContactsInListEndpoint);
+        getContactsInListEndpoint = `https://api.hubapi.com/contacts/v1/lists/${uniqueListId}/contacts/all?hapikey=${apiKeyOrigin}&property=email&vidOffset=${vidOffset}&count=100`;
+        do {
+            error = false;
+            try {
+                countCalls();
+                var res = await axios.get(getContactsInListEndpoint);
+    
+            }
+            catch(error) {
+                error = true;
+                console.log('Error occured. Retrying in 2 seconds');
+                sleep(2000);
+            }
+        } while (error);
         contactArray = res.data.contacts;
         if (contactArray) placeholderArray = contactArray.map( contact => contact.properties.email ? contact.properties.email.value : "noEmail");
         emailArray = [...emailArray, ...placeholderArray];
@@ -76,7 +99,7 @@ const getStaticListsOrigin = async () => {
   /**
    * Recreates lists in target portal and creates a mappingJson.
    * @param  {Object} data  array of lists that are to be recreated.
-   * @return {file}         staticListIdMapping.json in global id_mappings-directory.
+   * @return {file}         listIdMapping.json in global id_mappings-directory.
    */
 const cloneListsIntoTarget = async (data) => {
     let finalJson = '{\n';
@@ -98,7 +121,7 @@ const cloneListsIntoTarget = async (data) => {
         } 
     }
     finalJson = finalJson.slice(0, -3) + '\n}';
-    fs.writeFileSync('../../id_mappings/staticListIdMapping.json', finalJson); 
+    fs.writeFileSync('../../id_mappings/listIdMapping.json', finalJson); 
     return listIdArray;
 }
 
