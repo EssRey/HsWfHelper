@@ -76,6 +76,7 @@ const getContactEmailsInList = async (uniqueListId) => {
         vidOffset = res.data['vid-offset'];
     }
     emailArray.sort((a,b) => a>b?1:-1);
+    emailArray = [...new Set(emailArray)];
     return emailArray;
 }
 
