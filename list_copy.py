@@ -81,6 +81,7 @@ def process_list(list_id, hapikey=hapikey_origin):
 # Active list copy related functions (external interface)
 #-------------
 def copy_list(list_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=False):
+    print ("start processing list " + str(list_id))
     body = process_list(list_id, hapikey=hapikey_origin)
     if not simulate:
         r = requests.post(url_create_list(hapikey_target), json = body)
@@ -123,6 +124,8 @@ def dump_all_lists(hapikey_origin=hapikey_origin, portal_identifier="TEST"):
 
 if __name__ == "__main__":
     copy_all_lists(simulate=True)
+    #test = process_list(3170)
+    #print(json.dumps(test))
     #dump_all_lists(hapikey_origin="hapikey", portal_identifier="CUSTOMER")
     #logger.write_log("my_log")
     #print(all_lists_raw()[0]["listId"])

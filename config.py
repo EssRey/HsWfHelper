@@ -17,15 +17,15 @@ ils_dummy_prefix = ""
 
 # workflow_copy.py
 
-action_placeholder_property = "message"
+action_placeholder_property = "migration_placeholder_action"
 
 # segment_parser.py
 
 # contact string property
-placeholder_property = "message"
+placeholder_property = "migration_placeholder_filter"
 
 # deal string property
-placeholder_deal_property = "dealname"
+placeholder_deal_property = "migration_placeholder_deal_filter"
 
 # engagement string property
 placeholder_engagement_property = "hs_note_body"

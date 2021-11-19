@@ -228,6 +228,7 @@ def process_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=
 
 
 def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, silent=False, simulate=False):
+    print ("start processing workflow " + str(workflow_id))
     #workflow = requests.get(url_wf(str(workflow_id), hapikey_origin)).json()
     #print(workflow)
     #wf_type = workflow["type"]
@@ -241,7 +242,7 @@ def copy_workflow(workflow_id, hapikey_origin=hapikey_origin, hapikey_target=hap
     #    "actions": actions
     #}
     # print(body)
-    body = process_workflow(workflow_id)
+    body = process_workflow(workflow_id, hapikey_origin)
     if simulate:
         r = {"text": "not really doing anything"}
         silent = True
