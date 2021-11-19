@@ -122,7 +122,7 @@ const cloneListsIntoTarget = async (data) => {
         } 
     }
     finalJson = finalJson.slice(0, -3) + '\n}';
-    fs.writeFileSync('../../id_mappings/listIdMapping.json', finalJson); 
+    fs.writeFileSync('../../id_mappings/staticListIdMapping.json', finalJson); 
     return listIdArray;
 }
 

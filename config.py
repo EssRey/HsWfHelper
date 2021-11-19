@@ -7,7 +7,7 @@ hapikey_origin = env_config["HAPIKEY_ORIGIN"]
 hapikey_target = env_config["HAPIKEY_TARGET"]
 
 
-log_destination = "logs/IF_IT_"
+log_destination = "logs/portalname_"
 short_circuit_property = "pre_migration_workflow_enrollments"
 
 # list_copy.py
