@@ -205,11 +205,11 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
     #event.update(event_log)
     #full_log.append(event.copy())
 
-#def write_log(log_file_name: str) -> None:
-#    log_df = pd.DataFrame(full_log)
-#    log_df.to_csv(log_file_name+".csv", index=False)
-    #with open(log_file_name+".pickle", 'wb') as handle:
-    #    pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
+def write_log(log_file_name: str) -> None:
+    log_df = pd.DataFrame(full_log)
+    log_df.to_csv(log_file_name+".csv", index=False)
+    with open(log_file_name+".pickle", 'wb') as handle:
+        pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def write_todo(log_file_name: str) -> None:
     todo_df = pd.DataFrame(all_tasks)

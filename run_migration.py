@@ -8,4 +8,5 @@ import logger
 
 copy_all_lists(simulate=True)
 #copy_all_workflows(simulate=True)
-logger.write_log("simulates_list_copy_v1")
+logger.write_log("simulated_list_copy_v1")
+logger.write_todo("simulated_list_copy_v1")
