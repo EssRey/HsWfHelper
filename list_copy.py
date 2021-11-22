@@ -104,6 +104,10 @@ def copy_all_lists(hapikey_origin=hapikey_origin, hapikey_target=hapikey_target,
             pass
         else:
             copy_list(mylist["listId"], hapikey_origin=hapikey_origin, hapikey_target=hapikey_target, simulate=simulate)
+    if simulate == False:
+        with open("id_mappings/dynamicListIdMapping.json", "w") as fp:
+            json.dump(list_id_map, fp)
+            print("make sure dynamicListIdMapping.json is correct and then re-create id map")
 
 def dump_list(list_id, hapikey=hapikey_origin):
     origin_list = requests.get(url_list(list_id, hapikey)).json()

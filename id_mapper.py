@@ -1,5 +1,6 @@
 import json
 import config
+import logger
 
 ###
 # Configuration
@@ -122,7 +123,9 @@ def get_target_id(attribute, value_origin):
         # if there is no mapping it will apply any fallback value provided (which may be null/None)
         # if there is no mapping and no fallback, it RETURNS THE ORIGINAL VALUE
         # (remove mappings and fallback if an ID should not be changed)
-        return attribute_to_getter[attribute](value_origin)
+        substitution_value = attribute_to_getter[attribute](value_origin)
+        logger.log_event("id_substitution", {"type": str(attribute), "original_id": str(value_origin), "mapped_id": str(substitution_value)})
+        return substitution_value
 
 def set_id(attribute, new_key, new_value):
     if attribute in id_mappings:

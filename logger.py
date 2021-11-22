@@ -8,7 +8,7 @@ object_id = ""
 segment_context = ""
 workflow_flow_id = ""
 
-#full_log = []
+full_log = []
 #full_todo = []
 #full_dependencies = []
 
@@ -26,8 +26,8 @@ workflow_flow_id = ""
 all_tasks = []
 object_tasks = {}
 
-list_url_prefix = "https://app.hubspot.com/contacts/2327438/lists/"
-workflow_url_prefix = "https://app.hubspot.com/workflows/2327438/flow/"
+list_url_prefix = "https://app.hubspot.com/contacts/OLD_HUB_ID/lists/"
+workflow_url_prefix = "https://app.hubspot.com/workflows/OLD_HUB_ID/flow/"
 
 def push_object_tasks():
     global object_tasks
@@ -196,23 +196,25 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
         #any reenrollment trigger
         # has type key
         pass
+    elif event_key == "id_substitution":
+        pass
     else:
         raise ValueError("Unknown logging event key: " + str(event_key))
-    #event = {"object_type": object_type,
-    #         "object_id": object_id,
-    #         "segment_context": segment_context,
-    #         "log_key": event_key}
-    #event.update(event_log)
-    #full_log.append(event.copy())
+    event = {"object_type": object_type,
+            "object_id": object_id,
+            "segment_context": segment_context,
+            "log_key": event_key}
+    event.update(event_log)
+    full_log.append(event.copy())
 
-# def write_log(log_file_name: str) -> None:
-#     log_df = pd.DataFrame(full_log)
-#     log_df.to_csv(log_file_name+".csv", index=False)
-#     with open(log_file_name+".pickle", 'wb') as handle:
-#         pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
+def write_log(log_file_name: str) -> None:
+    log_df = pd.DataFrame(full_log)
+    log_df.to_csv(log_file_name+".csv", index=False)
+    with open(log_file_name+".pickle", 'wb') as handle:
+        pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def write_todo(log_file_name: str) -> None:
     todo_df = pd.DataFrame(all_tasks)
     todo_df = todo_df.sort_values(by=["object_id"])
     todo_df.to_csv(log_file_name+".csv", index=False)
-    todo_df.to_excel(log_file_name+".xlsx", index=False)
+    #todo_df.to_excel(log_file_name+".xlsx", index=False)

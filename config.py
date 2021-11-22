@@ -6,8 +6,13 @@ env_config = dotenv_values(".env")
 hapikey_origin = env_config["HAPIKEY_ORIGIN"]
 hapikey_target = env_config["HAPIKEY_TARGET"]
 
+###
+# # logger.py also includes two configuration variables
+# (list_url_prefix and workflow_url_prefix)
+# to be set manually
+###
 
-log_destination = "logs/portalname_"
+log_destination = "logs/medflex_"
 short_circuit_property = "pre_migration_workflow_enrollments"
 
 # list_copy.py
