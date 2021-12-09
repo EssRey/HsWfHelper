@@ -48,11 +48,13 @@ The schemata of individual workflow actions are defined in "actions_schemata.jso
 
 ID mappings should be provided as CSV files in the "id_mappings" subdirectory. Each file should look as follows:
 
+```
 [TYPE]
-SOURCE_ID,TARGER_ID
+SOURCE_ID,TARGET_ID
 [old_id_x],[new_id_x]
 [old_id_y],[new_id_y]
 ...
+```
 
 Where TYPE is one of the following (explanation in parentheses):
 * MARKETING_EMAIL (for marketing email or email content IDs)
