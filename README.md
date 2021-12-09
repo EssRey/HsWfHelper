@@ -18,7 +18,7 @@ This is a collection of scripts to faciliate a partial auto-migration of static 
 
 This is a "pseudo-class" diagram representation of most of the dependencies between the programs in this repositories (excluding auxiliary Node scripts). The UML class diagram analogy is as follows: "classes" are individual Python scripts, "attributes" are configuration variables specific to a script (they are actually defined in config.py), and "methods" are the "public API" functions defined in the module.
 
-![pseudo class diagram](HSWfHelper_dependencies.png)
+![pseudo class diagram](./HsWfHelper_dependencies.png)
 
 Green elements represent input files that need to be customized with each particular migration. Public elements represent the user-facing interface. An example of using that interface is represented by run_migration.py .
 
