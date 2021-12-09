@@ -1,6 +1,6 @@
 # HsWfHelper
 
-This is a collection of scripts to faciliate a partial auto-migration of static lists, active lists, and contact-based workflows across HubSpot portals. It uses public APIs only. Various object ID mappings should exist as input files. The intention is to provide two outputs:
+This is a collection of scripts to faciliate a partial auto-migration of static lists, active lists, and contact-based workflows across HubSpot portals. It uses public APIs only. Various object ID mappings should exist as input files. The intention is to provide the following outputs:
 
 * the actual migrated lists/workflows, potentially including placeholders (actions/filters that could not be re-created)
 * text files enumerating all specific manual follow-up tasks that are required to complete a migration
