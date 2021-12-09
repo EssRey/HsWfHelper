@@ -46,15 +46,22 @@ The schemata of individual workflow actions are defined in "actions_schemata.jso
 
 ### ID mappings
 
-The following ID mappings should be provided as a dictionary of dictionaries in the "id_mappings.json" file:
-* workflowId
-* emailContentId
-* userId
-* ownerId
-* listId
-* subscriptionId
-* teamId
-* (some additional IDs that haven't been tested yet, in particular stage and pipeline IDs, extensionIDs and extensionDefinitionIds, and appIds)
+ID mappings should be provided as CSV files in the "id_mappings" subdirectory. Each file should look as follows:
+
+[TYPE]
+SOURCE_ID,TARGER_ID
+[old_id_x],[new_id_x]
+[old_id_y],[new_id_y]
+...
+
+Where TYPE is one of the following (explanation in parentheses):
+* MARKETING_EMAIL (for marketing email or email content IDs)
+* OWNER (owner IDs)
+* LANDING_PAGE (page IDs of both landing pages and website pages)
+* FORM (form IDs)
+* BLOG_POST (page IDs of blog posts)
+* CTA (cta IDs)
+* SUBSCRIPTION_DEFINITION (subscrition type IDs)
 
 ## How to run
 
