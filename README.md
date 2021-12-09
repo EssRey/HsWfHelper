@@ -49,10 +49,10 @@ The schemata of individual workflow actions are defined in "actions_schemata.jso
 ID mappings should be provided as CSV files in the "id_mappings" subdirectory. Each file should look as follows:
 
 ```
-[TYPE]
+TYPE
 SOURCE_ID,TARGET_ID
-[old_id_x],[new_id_x]
-[old_id_y],[new_id_y]
+old_id_x,new_id_x
+old_id_y,new_id_y
 ...
 ```
 
