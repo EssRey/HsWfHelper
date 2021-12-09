@@ -1,14 +1,24 @@
 # HsWfHelper
 
-[Intro text to come]
+This is a collection of scripts to faciliate a partial auto-migration of static lists, active lists, and contact-based workflows across HubSpot portals. It uses public APIs only. Various object ID mappings should exist as input files. The intention is to provide two outputs:
+
+* the actual migrated lists/workflows, potentially including placeholders (actions/filters that could not be re-created)
+* text files enumerating all specific manual follow-up tasks that are required to complete a migration
+* text files enumerating various data dependency problem (e.g. branching logic that depends on that that is not in fact migratable)
+* a multiple checkbox contact property that captures the enrollment history in the origin portal
+* (optionally) a specific "short-circuit" modification added to each migrated workflow that force-enrolls all contacts in the target portal that have been enrolled in the workflow in the origin portal. This is a means of inducing (mostly) correct re-enrollment behavior in the target portal
 
 ## Useful files in this repo
 
 * "technical_limitations.md": a breakdown of what can be migrated with the current version of the public Workflows API
-* "workflow_copy.py": the actual proof-of-concept migration script, with a lot of stub/dummy/simplification in it
 * "action_schemata.json" contain processing schemata for all workflow action types
+* "segment_schemata.json" contain processing schemata for all filter types (used in workflow enrollment triggers, if-then-branching conditions, goal conditions, and in pre-July-2021 dynamic lists)
+
 
 ## Configuration
+
+* set configuration variables in config.py
+* provide suitable id mapping files in the "inputs" directory 
 
 ### API keys
 
@@ -16,8 +26,6 @@
 
   * `HAPIKEY_ORIGIN=f******d-2**v-4**5-9**3-7**********d`
   * `HAPIKEY_TARGET=6******5-3**2-4**4-b**1-***********4`
-
-* THE DESTIONATION PORTAL MUST BE A TEST OR SANDBOX PORTAL (as this script currently produces a lot of placeholders and is not ready for serious use)
 
 ### Workflow action schemata
 
@@ -39,25 +47,34 @@ The following ID mappings should be provided as a dictionary of dictionaries in 
 * teamId
 * (some additional IDs that haven't been tested yet, in particular stage and pipeline IDs, extensionIDs and extensionDefinitionIds, and appIds)
 
-NOTE: Any mappings supplied as configuration are NOT being applied by the script yet (still being worked on)
-
 ## How to run
 
-Run "workflow_copy.py" in a Python interpreter, or import the "copy_workflow" function for interactive use. Tested using Python 3.8.6 on MacOS 10.15.7 (note there are no actual tests yet).
+A typical sequence of execution steps would look as follows:
 
-NOTE: Right now the script will not in fact apply any ID mappings, and it will presume the existence of all properties. To run this script, please set the origin portal and the target portal api keys to the SAME key. The script will make copies of all workflows in the portal. This is obviously only safe in portals that exist for testing purposes only.
+1. Creat .env file with hapikeys, and customize config.py
+2. supply ID mappings as CSV files
+4. create contact properties "migration_placeholder_action" and "migration_placeholder_filter"
+5. deal property "migration_placeholder_deal_filter"
+6. node additional_node_scripts/enrollment_history_to_multiple_checkbox/app.js
+7. node additional_node_scripts/enrollment_history_to_multiple_checkbox/app2_only_property_creation.js
+8. node additional_node_scripts/get_all_object_properties/app.js (run "npm install" first)
+9. node additional_node_scripts/migrate_static_lists/migrateEmptyLists.js (run "npm install" first)
+10. node additional_node_scripts/migrate_static_lists/addContactsToLists.js
+11. install python3 dependencies (sorry requirements.txt still missing, basically dotenv-python, pandas, and requests)
+12. python3 create_input_files.py
+13. (repeat this step until it resolves without error) python3 copy_all_lists(simulate=True) # via run_migration.py
+14. (repeat this step until it resolves without error) python3 copy_all_workflows(simulate=True) # via run_migration.py
+15. copy_all_lists(simulate=False)  # via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
+16. create_input_files.py # this patches in the list ID mappings from steps 15 and 9
+17. copy_all_workflows(simulate=False) # via run_migration.py # via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
+18. additional_node_scripts/enrollment_history_to_multiple_checkbox/app2.js
+19. manual follow-up: consult the csv "todo" files created in steps 15 and 17
 
 ## Current limitations
 
 In addition to the limitations laid out in "technical_limitations.md", right now the script has the following limitations:
-* some "set property" actions and related actions are currently attributed to the wrong object type. See issue tracker, should be resolved in next version.
-* "delay until time of day / day of week" actions are wrongly migrated as zero-delay "delay for set amount of time" actions (instead of as placeholders). See issue tracker. Should be trivially resolved in next version.
-* no ID mappings are applied
 * the following additional action types are migrated as placeholders:
   * webhook actions with request signatures
   * "rotate owner"
   * "create ticket" and "create deal" actions
   * workflow extension actions
-* workflow enrollment triggers are not yet migrated (no automatic triggers in the migrated workflows, need to be added manually)
-* every if-then filter condition is replaced with the dummy filter condition "create date is known", and would have to be corrected manually
-* workflows, cross-workflow unenrollments, suppression lists, execution times and other workflow-level settings aren't migrated yet (most of it will eventually be migratable though)
