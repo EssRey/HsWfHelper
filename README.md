@@ -75,18 +75,20 @@ A typical sequence of execution steps would look as follows:
 5. deal property "migration_placeholder_deal_filter"
 6. node additional_node_scripts/enrollment_history_to_multiple_checkbox/app.js
 7. node additional_node_scripts/enrollment_history_to_multiple_checkbox/app2_only_property_creation.js
-8. node additional_node_scripts/get_all_object_properties/app.js (run "npm install" first)
-9. node additional_node_scripts/migrate_static_lists/migrateEmptyLists.js (run "npm install" first)
+8. node additional_node_scripts/get_all_object_properties/app.js
+9. node additional_node_scripts/migrate_static_lists/migrateEmptyLists.js
 10. node additional_node_scripts/migrate_static_lists/addContactsToLists.js
-11. install python3 dependencies (sorry requirements.txt still missing, basically dotenv-python, pandas, and requests)
-12. python3 create_input_files.py
-13. (repeat this step until it resolves without error) python3 copy_all_lists(simulate=True) # via run_migration.py
-14. (repeat this step until it resolves without error) python3 copy_all_workflows(simulate=True) # via run_migration.py
-15. copy_all_lists(simulate=False)  # via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
-16. create_input_files.py # this patches in the list ID mappings from steps 15 and 9
-17. copy_all_workflows(simulate=False) # via run_migration.py # via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
-18. additional_node_scripts/enrollment_history_to_multiple_checkbox/app2.js
-19. manual follow-up: consult the csv "todo" files created in steps 15 and 17
+11. python3 create_input_files.py
+12. (repeat this step until it resolves without error) execute copy_all_lists(simulate=True) from copy_lists.py # via run_migration.py
+13. (repeat this step until it resolves without error) execute copy_all_workflows(simulate=True) from copy_workflows.py # via run_migration.py
+14. execute copy_all_lists(simulate=False) from copy_lists.py  # e.g. via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
+15. python3 create_input_files.py # this patches in the list ID mappings from steps 15 and 9
+16. execute copy_all_workflows(simulate=False) from copy_workflows.py # e.g. via run_migration.py, uncomment logger.write_log and logger.write_todo to create appropriate work files for manual follow-up
+17. node additional_node_scripts/enrollment_history_to_multiple_checkbox/app2.js
+18. manual follow-up: consult the csv "todo" files created in steps 15 and 17
+
+Python should be version 3.8.x or 3.9.x, and Node should be version 14. Note that you may need to install some python3 dependencies (sorry requirements.txt still missing, basically dotenv-python, pandas, and requests). In addition, you will have to "npm install" before running the node scripts.
+
 
 ## Current limitations
 
