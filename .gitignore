@@ -7,7 +7,6 @@ additional_node_scripts/get_all_object_properties/.env
 additional_node_scripts/enrollment_history_to_multiple_checkbox/.env
 additional_node_scripts/migrate_static_lists/node_modules
 additional_node_scripts/migrate_static_lists/package*
-results/*
 additional_node_scripts/migrate_static_lists/staticListsWithContacts/*
 additional_node_scripts/migrate_static_lists/listsWithContacts/*
 
@@ -18,7 +17,6 @@ id_mappings/*.json
 not_ready/
 misc_docs/
 playground/
-results/
 logs/*.json
 logs/*.txt
 logs/*.csv
