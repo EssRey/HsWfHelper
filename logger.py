@@ -1,7 +1,7 @@
 import json
 from typing import Any, Tuple
 import pandas as pd
-import pickle
+#import pickle
 
 object_type = ""
 object_id = ""
@@ -130,6 +130,9 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
         #workflow action
         #ok
         pass
+    elif event_key == "see_opt_out_property":
+        create_task("contains_opt_out_property", "(simulation debug warning) This asset references an opt-out property in a filter condition. Its migration will likely fail.")
+
     elif event_key == "suppression_list_dependency":
         #suppression list
         if event_log["substituted"] == False:
@@ -210,8 +213,8 @@ def log_event(event_key: str, event_log: dict = {}) -> None:
 def write_log(log_file_name: str) -> None:
     log_df = pd.DataFrame(full_log)
     log_df.to_csv(log_file_name+".csv", index=False)
-    with open(log_file_name+".pickle", 'wb') as handle:
-        pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open(log_file_name+".pickle", 'wb') as handle:
+    #    pickle.dump(full_log, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def write_todo(log_file_name: str) -> None:
     todo_df = pd.DataFrame(all_tasks)

@@ -107,7 +107,7 @@ except FileNotFoundError:
 
 print('please check CTA and subscription ID types')
 for id_type in base_dict:
-    if id_type not in ["formId", "ownerId"]:#maybe also CTAs?
+    if id_type not in ["formId", "ownerId", "ctaId"]:
         for item in base_dict[id_type]["map"]:
             base_dict[id_type]["map"][item] = int(base_dict[id_type]["map"][item])
 

@@ -26,15 +26,16 @@ reference_owner_properties = config.reference_owner_properties
 # Functions
 ###
 
+
 def owner_id_check(value, prop, object_type):
     if (object_type == "DEAL" and prop in reference_owner_properties["deal"] or
-            object_type == "LINE_ITEM" and prop in reference_owner_properties["line_item"] or
-            object_type == "COMPANY" and prop in reference_owner_properties["company"] or
-            object_type == "CONTACT" and prop in reference_owner_properties["contact"] or
-            object_type == "ENGAGEMENT" and prop in reference_owner_properties["engagement"]):
+        object_type == "LINE_ITEM" and prop in reference_owner_properties["line_item"] or
+        object_type == "COMPANY" and prop in reference_owner_properties["company"] or
+        object_type == "CONTACT" and prop in reference_owner_properties["contact"] or
+        object_type == "ENGAGEMENT" and prop in reference_owner_properties["engagement"]):
         substitution_result = get_target_id("ownerId", value)
         if substitution_result is None:
-            return {"log_type":"SUBSTITUTION_ERROR", "log":"cannot_map_ownerId "+str(value)}
+            return {"log_type": "SUBSTITUTION_ERROR", "log": "cannot_map_ownerId "+str(value)}
         else:
             value = substitution_result
     return value
@@ -255,6 +256,30 @@ def segment_processor(segment):
                     processed_segment["strValue"] = joined_owner_string
     return processed_segment, event_log_segment
 
+
+## This is rough way of flagging the usage of any of the opt out properties (which change names across migrated portals, but have no mapping yet).
+## Careful with the clumsy recursion here.
+
+def flag_opt_out_property(segment):
+    if isinstance(segment, dict):
+        for key in segment:
+            if isinstance(key, str):
+                if "hs_email_optout_" in key:
+                    return True
+            if isinstance(segment[key], str):
+                 if "hs_email_optout_" in segment[key]:
+                    return True
+            elif isinstance(segment[key], dict) or isinstance(segment[key], list):
+                if flag_opt_out_property(segment[key]):
+                    return True
+    elif isinstance(segment, list):
+        for sub_segment in segment:
+            if flag_opt_out_property(sub_segment):
+                return True
+    return False
+
+
+
 ###
 # External interface
 ###
@@ -271,6 +296,8 @@ def segment_placeholder(segment):
 
 def parse_segments(segments, processor=segment_processor):
     assert isinstance(segments, list)
+    if flag_opt_out_property(segments):
+        logger.log_event("see_opt_out_property", {"type": "segment"})
     segment_log = []
     processed_segments = []
     for sufficient_group in segments:
@@ -293,6 +320,8 @@ def parse_reEnrollment(triggers):
     if not isinstance(triggers, list):
         print("cannot parse reEnrollmentTriggerSets, returning empty segments")
         return []
+    if flag_opt_out_property(segment):
+        logger.log_event("see_opt_out_property", {"type": "reEnrollmentTrigger"})
     processed_triggers = []
     for trigger in triggers:
         logger.log_event("see_a_reenrollment_trigger", {"type": trigger[0]["type"]})
