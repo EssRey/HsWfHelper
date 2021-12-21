@@ -320,7 +320,7 @@ def parse_reEnrollment(triggers):
     if not isinstance(triggers, list):
         print("cannot parse reEnrollmentTriggerSets, returning empty segments")
         return []
-    if flag_opt_out_property(segment):
+    if flag_opt_out_property(triggers):
         logger.log_event("see_opt_out_property", {"type": "reEnrollmentTrigger"})
     processed_triggers = []
     for trigger in triggers:

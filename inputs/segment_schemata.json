@@ -25,7 +25,8 @@
     "type": "pass",
     "checkPastVersions": "pass",
     "propertyObjectType": "pass",
-    "compareProperty": "PROP_contact_property"
+    "compareProperty": "PROP_contact_property",
+    "highValue": "pass"
   },
   "ListMembership": {
     "list": "ID_listId",
@@ -82,5 +83,8 @@
     "value": "pass",
     "checkPastVersions": "pass",
     "compareProperty": "PROP_deal_or_lineitem_property"
+  },
+  "SurveyMonkey": {
+    "surveyMonkeyQuestionDetails": "DO_NOT_PROCESS"
   }
 }
