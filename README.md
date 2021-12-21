@@ -98,3 +98,6 @@ In addition to the limitations laid out in "technical_limitations.md", right now
   * "rotate owner"
   * "create ticket" and "create deal" actions
   * workflow extension actions
+* a number of filter types (in static lists / enrolment conditions / if-then branching / workflow goals) are migrated as placeholders, including:
+  * "Marketing emails" (click/open/send conditions etc.)
+  * SurveyMonkey surveys
